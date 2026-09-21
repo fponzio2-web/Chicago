@@ -370,7 +370,15 @@ const mapsUrl = i => 'https://www.google.com/maps/search/?api=1&query=' + encode
 let sb = null, syncChain = Promise.resolve();
 const remote = new Map();
 const SYNC_TEXT = { local: 'Só neste aparelho', loading: 'Conectando à nuvem…', saving: 'Salvando…', ok: 'Nuvem sincronizada', error: 'Sem conexão com a nuvem', nolib: 'Não foi possível carregar a nuvem' };
-function setSync(s) { const el = $('#syncState'); el.dataset.s = s === 'saving' || s === 'loading' ? 'ok' : s; el.textContent = SYNC_TEXT[s] || ''; }
+function setSync(s, detail) { const el = $('#syncState'); el.dataset.s = s === 'saving' || s === 'loading' ? 'ok' : s; el.textContent = (SYNC_TEXT[s] || '') + (detail ? ': ' + detail : ''); }
+function describeErr(e) {
+  const m = String((e && (e.message || e.details)) || e || ''), c = e && e.code;
+  if (c === 'PGRST205' || c === '42P01' || /does not exist|schema cache/i.test(m)) return 'tabela não encontrada (rode o SQL no Supabase)';
+  if (c === '42501' || /row-level security|permission denied/i.test(m)) return 'sem permissão (rode o SQL da política)';
+  if (c === 'PGRST301' || /invalid api key|jwt|apikey/i.test(m)) return 'chave inválida (confira o config.js)';
+  if (/failed to fetch|network|load failed/i.test(m)) return 'URL errada ou sem internet (confira o config.js)';
+  return m.slice(0, 90) || 'erro desconhecido';
+}
 const rowOf = i => ({ id: i.id, name: i.name, address: i.address, region: i.region, note: i.note, done: i.done,
   lat: hasGeo(i) ? i.lat : null, lng: hasGeo(i) ? i.lng : null, geo: i.geo, manual: i.manual, ts: i.ts });
 const sig = i => JSON.stringify(rowOf(i));
@@ -400,15 +408,15 @@ async function doSync() {
     }
     setSync('ok');
   } catch (e) {
-    setSync('error');
-    toast('Não deu para salvar na nuvem. Confira a conexão.');
+    setSync('error', describeErr(e));
+    toast('Não deu para salvar na nuvem. Veja o aviso vermelho abaixo do título.');
   }
 }
 function pushChanges() { syncChain = syncChain.then(doSync); return syncChain; }
 async function pull(first) {
   if (!first) { await pushChanges(); }
   const { data, error } = await sb.from(TABLE).select('*').order('ts', { ascending: false });
-  if (error) { setSync('error'); return false; }
+  if (error) { setSync('error', describeErr(error)); return false; }
   const rows = data.map(fromRow).filter(Boolean);
   remote.clear(); rows.forEach(r => remote.set(r.id, sig(r)));
   let next = rows;
@@ -449,9 +457,9 @@ async function cloudInit() {
   if (!CLOUD) { setSync('local'); return; }
   sb = window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseKey);
   setSync('loading');
-  const ok = await pull(true);
+  let ok = false;
+  try { ok = await pull(true); } catch (e) { setSync('error', describeErr(e)); }
   sb.channel('places-live').on('postgres_changes', { event: '*', schema: 'public', table: TABLE }, onRemoteChange).subscribe();
-  if (!ok) setSync('error');
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') pull(false); });
   window.addEventListener('online', () => pull(false));
   setInterval(() => { if (document.visibilityState === 'visible') pull(false); }, 60000);
@@ -545,9 +553,9 @@ function initMap() {
     return;
   }
   map = L.map('map').setView([41.8781, -87.6298], 11);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-    maxZoom: 19, subdomains: 'abcd',
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
   }).addTo(map);
   layer = L.layerGroup().addTo(map);
   map.on('click', e => { if (ui.placingId) finishPlacing(e.latlng); });
