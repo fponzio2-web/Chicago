@@ -32,26 +32,29 @@ button{cursor:pointer}
 .app{height:100vh;height:100dvh;display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;padding-top:env(safe-area-inset-top)}
 
 /* Cabeçalho */
-.top{background:var(--surface);padding:12px 16px 0}
-.top-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
-h1{font:800 36px/1 var(--display);letter-spacing:.01em;margin:0}
-.sub{margin:2px 0 0;color:var(--muted);font-size:14px;font-weight:500}
-.sync{margin:1px 0 0;font-size:12.5px;font-weight:600;color:var(--muted)}
-.sync[data-s="ok"]{color:var(--blue-deep)}
-.sync[data-s="error"]{color:var(--red)}
-.icon-btn{width:44px;height:44px;border:1px solid var(--line);background:var(--surface);border-radius:12px;display:grid;place-items:center;color:var(--ink)}
-.progress{height:4px;background:var(--blue-tint);border-radius:2px;margin:10px 0 0;overflow:hidden}
-.progress span{display:block;height:100%;width:0;background:var(--red);transition:width .3s}
-.stripes{height:10px;margin:12px -16px 0;background:linear-gradient(var(--blue) 0 3px,#fff 3px 7px,var(--blue) 7px 10px)}
+.top{background:var(--surface);padding:8px 12px 0}
+.top-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.brand{display:flex;align-items:baseline;gap:10px;min-width:0}
+h1{font:800 28px/1 var(--display);letter-spacing:.01em;margin:0}
+.sub{margin:0;color:var(--muted);font-size:14px;font-weight:600;white-space:nowrap}
+.tools{display:flex;align-items:center;gap:8px}
+.sync{display:none;font-size:12.5px;font-weight:600;color:var(--muted)}
+.dot{width:12px;height:12px;border-radius:50%;background:#9DB3C1;box-shadow:0 0 0 2px #fff,0 0 0 3px var(--line);flex:none}
+.dot[data-s="ok"]{background:#2E9E5B}
+.dot[data-s="busy"]{background:var(--blue)}
+.dot[data-s="error"],.dot[data-s="nolib"]{background:var(--red)}
+.icon-btn{width:40px;height:40px;border:1px solid var(--line);background:var(--surface);border-radius:10px;display:grid;place-items:center;color:var(--ink)}
+.stripes{height:6px;margin:6px -12px 0;background:linear-gradient(var(--blue) 0 2px,#fff 2px 4px,var(--blue) 4px 6px)}
+.syncbar{margin:0 -12px;background:#FDECEC;color:var(--red);font-size:13px;font-weight:600;padding:6px 14px;border-bottom:1px solid #F0C4C6}
 
 /* Filtros */
-.filters{background:var(--surface);padding:10px 16px 12px;border-bottom:1px solid var(--line);display:grid;gap:10px;min-width:0}
+.filters{background:var(--surface);padding:8px 12px 10px;border-bottom:1px solid var(--line);display:grid;gap:8px;min-width:0}
 .seg{display:grid;grid-template-columns:repeat(3,1fr);background:var(--blue-tint);border-radius:10px;padding:3px}
-.seg button{border:0;background:transparent;padding:8px;border-radius:8px;font-weight:600;color:var(--blue-deep);min-height:40px}
+.seg button{border:0;background:transparent;padding:6px;border-radius:8px;font-weight:600;color:var(--blue-deep);min-height:36px}
 .seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(18,35,47,.18)}
 .chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none;min-width:0}
 .chips::-webkit-scrollbar{display:none}
-.chip{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 12px;min-height:38px;font-weight:500;white-space:nowrap}
+.chip{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;min-height:36px;font-weight:500;white-space:nowrap}
 .chip small{color:var(--muted);margin-left:6px;font-size:13px}
 .chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
 .chip[aria-pressed="true"] small{color:#B9C9D4}
@@ -64,7 +67,7 @@ h1{font:800 36px/1 var(--display);letter-spacing:.01em;margin:0}
 #map{position:absolute;inset:0;background:#dfe9ee}
 .app[data-view="list"] .map-pane,.app[data-view="map"] .list-pane{display:none}
 
-.actions{display:flex;gap:8px;padding:12px 12px 4px}
+.actions{display:flex;gap:8px;padding:10px 12px 2px}
 .actions .btn{flex:1}
 #list{list-style:none;margin:0;padding:0 12px 20px;overflow-y:auto;flex:1;min-height:0;-webkit-overflow-scrolling:touch}
 .empty{padding:28px 20px;text-align:center;color:var(--muted)}
@@ -92,6 +95,12 @@ h1{font:800 36px/1 var(--display);letter-spacing:.01em;margin:0}
 .tag{background:var(--blue-tint);color:var(--blue-deep);border-radius:6px;padding:1px 8px;font-weight:600;font-size:12.5px}
 .geo.fail{color:var(--red);font-weight:600}
 .go{width:48px;height:48px;display:grid;place-items:center;color:var(--blue-deep);border-radius:10px}
+.rate-row{grid-column:2/-1;display:flex;align-items:center;gap:0;padding:0 4px 6px}
+.rate-row .lbl{font-size:12.5px;color:var(--muted);margin-right:6px}
+.heart{width:40px;height:40px;border:0;background:none;display:grid;place-items:center;padding:0;border-radius:10px}
+.heart svg{width:24px;height:24px}
+.heart .h{fill:none;stroke:#9DB3C1;stroke-width:1.7;stroke-linejoin:round}
+.heart[aria-pressed="true"] .h{fill:var(--blue-deep);stroke:var(--blue-deep)}
 .more{grid-column:1/-1;padding:2px 10px 12px;display:grid;gap:8px}
 .more .addr,.more .note{margin:0;font-size:14px;color:var(--muted);overflow-wrap:anywhere}
 .more .row{display:flex;flex-wrap:wrap;gap:8px}
@@ -109,7 +118,7 @@ h1{font:800 36px/1 var(--display);letter-spacing:.01em;margin:0}
 
 /* Navegação inferior (celular) */
 .tabs{display:grid;grid-template-columns:1fr 1fr;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
-.tabs button{border:0;background:none;min-height:58px;display:grid;justify-items:center;align-content:center;gap:2px;font-weight:600;font-size:13px;color:var(--muted)}
+.tabs button{border:0;background:none;min-height:54px;display:grid;justify-items:center;align-content:center;gap:2px;font-weight:600;font-size:13px;color:var(--muted)}
 .tabs button[aria-selected="true"]{color:var(--blue-deep);box-shadow:inset 0 3px 0 var(--blue)}
 .tabs svg{width:22px;height:22px}
 
@@ -136,6 +145,7 @@ textarea{min-height:130px;resize:vertical;line-height:1.5}
 .toast button{background:none;border:0;color:#7FD0F2;font-weight:700;padding:8px 10px;min-height:40px}
 
 @media (min-width:700px){
+  .sync{display:inline}
   dialog{margin:auto;border-radius:18px;box-shadow:0 20px 60px rgba(18,35,47,.35)}
 }
 @media (min-width:900px){
@@ -153,17 +163,20 @@ textarea{min-height:130px;resize:vertical;line-height:1.5}
 
   <header class="top">
     <div class="top-row">
-      <div>
+      <div class="brand">
         <h1>Chicago</h1>
-        <p class="sub" id="progressText">Sua lista está vazia</p>
-        <p class="sync" id="syncState" data-s="local" aria-live="polite"></p>
+        <span class="sub" id="progressText">Lista vazia</span>
       </div>
-      <button class="icon-btn" id="btnData" aria-label="Backup e dados">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
-      </button>
+      <div class="tools">
+        <span class="sync" id="syncState"></span>
+        <span class="dot" id="syncDot" data-s="local" role="img" aria-label="Só neste aparelho" title="Só neste aparelho"></span>
+        <button class="icon-btn" id="btnData" aria-label="Backup e dados">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+        </button>
+      </div>
     </div>
-    <div class="progress" aria-hidden="true"><span id="barFill"></span></div>
     <div class="stripes" aria-hidden="true"></div>
+    <div class="syncbar" id="syncBar" role="status" hidden></div>
   </header>
 
   <section class="filters" aria-label="Filtros">
@@ -237,7 +250,7 @@ textarea{min-height:130px;resize:vertical;line-height:1.5}
         <label><span>Qtde</span><input id="aiQty" type="number" min="1" max="50" value="10" inputmode="numeric"></label>
       </div>
       <button class="btn small" id="copyPrompt" type="button">Copiar prompt para a IA</button>
-      <p class="hint">Cole o prompt no ChatGPT, Claude ou outro, e traga a resposta para a caixa acima.</p>
+      <p class="hint">O prompt já leva a sua lista (para a IA não repetir) e as notas que você deu (para ela sugerir o que você tende a gostar). Cole no ChatGPT, Claude ou outro e traga a resposta para a caixa acima.</p>
     </div>
     <p class="status" id="bStatus" aria-live="polite"></p>
     <div class="row-end">
@@ -304,6 +317,7 @@ const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 const STAR_SVG = `<svg viewBox="0 0 24 24" aria-hidden="true"><polygon class="star" points="${STAR}"/></svg>`;
+const HEART_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path class="h" d="M12 21s-7-4.35-9.33-8.5C.9 9.3 2.6 5.5 6.2 5.5c2.1 0 3.6 1.2 5.8 3.5 2.2-2.3 3.7-3.5 5.8-3.5 3.6 0 5.3 3.8 3.53 7C19 16.65 12 21 12 21z"/></svg>';
 const PIN_SVG = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>';
 
 let items = [];
@@ -325,6 +339,7 @@ function clean(o) {
     lng: hasGeo ? +o.lng : undefined,
     geo: hasGeo ? 'ok' : (o.geo === 'fail' ? 'fail' : 'pending'),
     manual: !!o.manual,
+    rating: Math.max(0, Math.min(5, Math.round(+o.rating || 0))),
     ts: Number.isFinite(+o.ts) && o.ts != null ? +o.ts : Date.now()
   };
 }
@@ -344,7 +359,8 @@ function save() {
 }
 const hasGeo = i => Number.isFinite(i.lat) && Number.isFinite(i.lng);
 const regionOf = i => i.region || 'Sem região';
-const nameKey = s => String(s).trim().toLowerCase();
+const nameKey = s => String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  .replace(/\(.*?\)/g, ' ').replace(/['’`]/g, '').replace(/[^a-z0-9]+/g, ' ').replace(/^(the|a|an) /, '').trim();
 function canonRegion(r) {
   r = (r || '').trim(); if (!r) return '';
   const ex = items.find(i => i.region && i.region.toLowerCase() === r.toLowerCase());
@@ -370,19 +386,28 @@ const mapsUrl = i => 'https://www.google.com/maps/search/?api=1&query=' + encode
 let sb = null, syncChain = Promise.resolve();
 const remote = new Map();
 const SYNC_TEXT = { local: 'Só neste aparelho', loading: 'Conectando à nuvem…', saving: 'Salvando…', ok: 'Nuvem sincronizada', error: 'Sem conexão com a nuvem', nolib: 'Não foi possível carregar a nuvem' };
-function setSync(s, detail) { const el = $('#syncState'); el.dataset.s = s === 'saving' || s === 'loading' ? 'ok' : s; el.textContent = (SYNC_TEXT[s] || '') + (detail ? ': ' + detail : ''); }
+function setSync(s, detail) {
+  const label = (SYNC_TEXT[s] || '') + (detail ? ': ' + detail : '');
+  const dot = $('#syncDot');
+  dot.dataset.s = s === 'saving' || s === 'loading' ? 'busy' : s;
+  dot.setAttribute('aria-label', label); dot.title = label;
+  $('#syncState').textContent = SYNC_TEXT[s] || '';
+  const bar = $('#syncBar'), bad = s === 'error' || s === 'nolib';
+  bar.hidden = !bad; bar.textContent = bad ? label : '';
+}
 function describeErr(e) {
   const m = String((e && (e.message || e.details)) || e || ''), c = e && e.code;
+  if (/rating/i.test(m)) return 'falta a coluna da nota (rode o SQL novo no Supabase)';
   if (c === 'PGRST205' || c === '42P01' || /does not exist|schema cache/i.test(m)) return 'tabela não encontrada (rode o SQL no Supabase)';
   if (c === '42501' || /row-level security|permission denied/i.test(m)) return 'sem permissão (rode o SQL da política)';
   if (c === 'PGRST301' || /invalid api key|jwt|apikey/i.test(m)) return 'chave inválida (confira o config.js)';
   if (/failed to fetch|network|load failed/i.test(m)) return 'URL errada ou sem internet (confira o config.js)';
   return m.slice(0, 90) || 'erro desconhecido';
 }
-const rowOf = i => ({ id: i.id, name: i.name, address: i.address, region: i.region, note: i.note, done: i.done,
+const rowOf = i => ({ id: i.id, name: i.name, address: i.address, region: i.region, note: i.note, done: i.done, rating: i.rating,
   lat: hasGeo(i) ? i.lat : null, lng: hasGeo(i) ? i.lng : null, geo: i.geo, manual: i.manual, ts: i.ts });
 const sig = i => JSON.stringify(rowOf(i));
-const fromRow = r => clean({ id: r.id, name: r.name, address: r.address, region: r.region, note: r.note, done: r.done,
+const fromRow = r => clean({ id: r.id, name: r.name, address: r.address, region: r.region, note: r.note, done: r.done, rating: r.rating,
   lat: r.lat, lng: r.lng, geo: r.geo, manual: r.manual, ts: r.ts });
 const byNewest = (a, b) => b.ts - a.ts;
 function diff() {
@@ -619,8 +644,7 @@ function render() {
 }
 function renderHeader() {
   const d = items.filter(i => i.done).length;
-  $('#progressText').textContent = items.length ? `${d} de ${items.length} feitos` : 'Sua lista está vazia';
-  $('#barFill').style.width = items.length ? (d / items.length * 100) + '%' : '0';
+  $('#progressText').textContent = items.length ? `${d} de ${items.length} feitos` : 'Lista vazia';
   $('#regionSuggest').innerHTML = [...new Set([...SUGGEST, ...items.map(i => i.region).filter(Boolean)])].map(r => `<option value="${esc(r)}">`).join('');
 }
 function renderChips() {
@@ -646,6 +670,11 @@ function moreHTML(i) {
       <button class="btn small danger" data-act="del">Excluir</button>
     </div></div>`;
 }
+function rateRow(i) {
+  let hs = '';
+  for (let n = 1; n <= 5; n++) hs += `<button class="heart" data-act="rate" data-rate="${n}" aria-pressed="${n <= i.rating}" aria-label="Nota ${n} de 5 para ${esc(i.name)}">${HEART_SVG}</button>`;
+  return `<div class="rate-row" role="group" aria-label="Nota"><span class="lbl">${i.rating ? 'Sua nota' : 'Dê uma nota'}</span>${hs}</div>`;
+}
 function itemHTML(i) {
   const open = ui.openId === i.id;
   const geoTxt = i.geo === 'pending' ? 'Localizando…' : i.geo === 'fail' ? 'Sem posição no mapa' : '';
@@ -656,6 +685,7 @@ function itemHTML(i) {
       <span class="meta"><span class="tag">${esc(regionOf(i))}</span>${geoTxt ? `<span class="geo ${i.geo}">${geoTxt}</span>` : ''}</span>
     </button>
     <a class="go" href="${mapsUrl(i)}" target="_blank" rel="noopener" aria-label="Abrir ${esc(i.name)} no Google Maps">${PIN_SVG}</a>
+    ${i.done ? rateRow(i) : ''}
     ${open ? moreHTML(i) : ''}
   </li>`;
 }
@@ -693,8 +723,9 @@ function removeItem(it) {
   save(); render();
   toast('Item excluído', () => { items.splice(Math.min(idx, items.length), 0, it); save(); render(); });
 }
-function act(name, it) {
+function act(name, it, btn) {
   switch (name) {
+    case 'rate': { const n = +btn.dataset.rate; it.rating = it.rating === n ? 0 : n; save(); renderList(); break; }
     case 'toggle': it.done = !it.done; save(); render(); break;
     case 'open': ui.openId = ui.openId === it.id ? null : it.id; renderList(); break;
     case 'show':
@@ -779,11 +810,28 @@ $('#bText').addEventListener('input', () => {
   const n = parseBatch($('#bText').value).length;
   $('#bCount').textContent = n ? `${n} ${n === 1 ? 'item reconhecido' : 'itens reconhecidos'}.` : 'Cole ou escreva a lista acima.';
 });
-$('#copyPrompt').addEventListener('click', async () => {
+function buildPrompt() {
   const n = Math.max(1, Math.min(50, +$('#aiQty').value || 10));
   const th = $('#aiTheme').value.trim();
-  const p = `Liste ${n} coisas para fazer em Chicago${th ? ' sobre: ' + th : ''}. Responda só com uma linha por item, neste formato exato:\nNome do lugar | Endereço completo, Chicago, IL | Bairro\nSem numeração, sem títulos e sem texto extra. Use apenas lugares reais e endereços que você tenha certeza que existem.`;
-  flash($('#bStatus'), (await copyText(p)) ? 'Prompt copiado. Cole na sua IA.' : 'Não foi possível copiar.');
+  const list = arr => arr.map(i => `${i.name}${i.region ? ' (' + i.region + ')' : ''}`).join('; ');
+  const rated = items.filter(i => i.done && i.rating);
+  const love = rated.filter(i => i.rating >= 4), meh = rated.filter(i => i.rating === 3), nope = rated.filter(i => i.rating <= 2);
+  let p = `Liste ${n} coisas para fazer em Chicago${th ? ' sobre: ' + th : ''}.\n`;
+  if (items.length) p += `\nJÁ ESTÃO NA MINHA LISTA (não repita nenhum, nem com nome parecido):\n${items.map(i => i.name).join('; ')}\n`;
+  if (rated.length) {
+    p += '\nO QUE JÁ FIZ E COMO AVALIEI (nota de 1 a 5):\n';
+    if (love.length) p += `Gostei muito (4 a 5): ${list(love.map(i => Object.assign({}, i, { name: i.name + ' - nota ' + i.rating })))}\n`;
+    if (meh.length) p += `Achei ok (3): ${list(meh)}\n`;
+    if (nope.length) p += `Não gostei (1 a 2): ${list(nope)}\n`;
+    p += 'Use isso para entender meu gosto: sugira coisas parecidas com as que gostei e evite o estilo das que não gostei.\n';
+  }
+  p += '\nResponda só com uma linha por item, neste formato exato:\nNome do lugar | Endereço completo, Chicago, IL | Bairro\nSem numeração, sem títulos e sem texto extra. Use apenas lugares reais e endereços que você tenha certeza que existem.';
+  return { text: p, total: items.length, rated: rated.length };
+}
+$('#copyPrompt').addEventListener('click', async () => {
+  const { text, total, rated } = buildPrompt();
+  const ok = await copyText(text);
+  flash($('#bStatus'), ok ? `Prompt copiado, com ${total} itens da lista e ${rated} notas. Cole na sua IA.` : 'Não foi possível copiar.');
 });
 $('#bAdd').addEventListener('click', () => {
   const parsed = parseBatch($('#bText').value);
@@ -868,7 +916,7 @@ $('#list').addEventListener('click', e => {
   if (!b) return;
   const li = b.closest('.item');
   const it = li && items.find(x => x.id === li.dataset.id);
-  if (it) act(b.dataset.act, it);
+  if (it) act(b.dataset.act, it, b);
 });
 $('#chips').addEventListener('click', e => {
   const b = e.target.closest('.chip'); if (!b) return;
