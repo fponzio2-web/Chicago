@@ -144,6 +144,15 @@ textarea{min-height:130px;resize:vertical;line-height:1.5}
 .toast{position:fixed;left:50%;bottom:calc(76px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:#fff;padding:8px 8px 8px 16px;border-radius:12px;display:flex;gap:10px;align-items:center;z-index:2000;max-width:calc(100% - 24px)}
 .toast button{background:none;border:0;color:#7FD0F2;font-weight:700;padding:8px 10px;min-height:40px}
 
+#lockScreen{position:fixed;inset:0;z-index:5000;background:var(--paper);display:grid;place-items:center;padding:20px;padding-top:calc(20px + env(safe-area-inset-top));padding-bottom:calc(20px + env(safe-area-inset-bottom))}
+#lockScreen .card{width:100%;max-width:360px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:24px 22px;display:grid;gap:14px;box-shadow:0 8px 30px rgba(18,35,47,.12)}
+#lockScreen .stripe{height:8px;border-radius:4px;background:linear-gradient(90deg,var(--blue) 0 33%,#fff 33% 66%,var(--red) 66%);margin:0 0 2px}
+#lockScreen h1{font:800 30px/1 var(--display);margin:0}
+#lockScreen p{margin:0;color:var(--muted);font-size:14px}
+#lockScreen label{display:grid;gap:6px;font-weight:600;font-size:14px}
+#lockScreen input{border:1px solid var(--line);border-radius:10px;padding:12px 13px;min-height:46px;font-size:16px}
+#lockScreen .err{color:var(--red);font-weight:600;font-size:13.5px;min-height:1.2em;margin:0}
+
 @media (min-width:700px){
   .sync{display:inline}
   dialog{margin:auto;border-radius:18px;box-shadow:0 20px 60px rgba(18,35,47,.35)}
@@ -159,7 +168,19 @@ textarea{min-height:130px;resize:vertical;line-height:1.5}
 </head>
 <body>
 <noscript>Este app precisa de JavaScript.</noscript>
-<div class="app" id="app" data-view="list">
+
+<div id="lockScreen" hidden>
+  <form class="card" id="lockForm" autocomplete="off">
+    <div class="stripe" aria-hidden="true"></div>
+    <h1>Chicago</h1>
+    <p>Lista privada. Peça a senha para quem te convidou.</p>
+    <label><span>Senha</span><input id="lockInput" type="password" required autocomplete="current-password" inputmode="text"></label>
+    <p class="err" id="lockErr" role="alert" hidden>Senha incorreta.</p>
+    <button class="btn primary" type="submit">Entrar</button>
+  </form>
+</div>
+
+<div class="app" id="app" data-view="list" hidden>
 
   <header class="top">
     <div class="top-row">
@@ -306,6 +327,20 @@ const SAMPLES = [
 ];
 
 const CFG = window.APP_CONFIG || {};
+const LOCK_KEY = 'chicago-unlock-v1';
+const WANT_LOCK = !!CFG.passcodeHash && !/COLE_AQUI/i.test(CFG.passcodeHash);
+async function sha256Hex(text) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+async function isUnlocked() {
+  if (!WANT_LOCK) return true;
+  try { return localStorage.getItem(LOCK_KEY) === CFG.passcodeHash; } catch (e) { return false; }
+}
+function revealApp() {
+  $('#lockScreen').hidden = true;
+  $('#app').hidden = false;
+}
 const TABLE = 'places';
 const SEEDED = 'chicago-cloud-seeded';
 const WANT_CLOUD = !!(CFG.supabaseUrl && CFG.supabaseKey) && !/COLE_AQUI/.test(CFG.supabaseUrl + CFG.supabaseKey);
@@ -951,12 +986,31 @@ document.addEventListener('click', e => {
 window.addEventListener('resize', () => { if (map) map.invalidateSize(); });
 
 /* ---------- início ---------- */
+function boot() {
+  revealApp();
+  initMap();
+  render();
+  if (CLOUD) cloudInit();
+  else { setSync(WANT_CLOUD ? 'nolib' : 'local'); items.filter(i => i.geo === 'pending').forEach(i => queueGeo(i.id)); }
+}
 load();
 items.sort(byNewest);
-initMap();
-render();
-if (CLOUD) cloudInit();
-else { setSync(WANT_CLOUD ? 'nolib' : 'local'); items.filter(i => i.geo === 'pending').forEach(i => queueGeo(i.id)); }
+(async () => {
+  if (await isUnlocked()) { boot(); return; }
+  $('#lockScreen').hidden = false;
+  $('#lockInput').focus();
+  $('#lockForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const h = await sha256Hex($('#lockInput').value);
+    if (h === CFG.passcodeHash) {
+      try { localStorage.setItem(LOCK_KEY, h); } catch (err) { /* ignora */ }
+      boot();
+    } else {
+      $('#lockErr').hidden = false;
+      $('#lockInput').value = ''; $('#lockInput').focus();
+    }
+  });
+})();
 })();
 </script>
 </body>
