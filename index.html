@@ -1,0 +1,907 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Chicago – checklist</title>
+<meta name="theme-color" content="#41B6E6">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Chicago">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpolygon fill='%23D8232A' points='12,2 14.89,7 20.66,7 17.77,12 20.66,17 14.89,17 12,22 9.11,17 3.34,17 6.23,12 3.34,7 9.11,7'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=Public+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+:root{
+  --paper:#F6F9FB; --surface:#FFFFFF; --ink:#12232F; --muted:#586C7A;
+  --blue:#41B6E6; --blue-deep:#0B6B97; --blue-tint:#E3F4FB;
+  --red:#D8232A; --line:#D5E1E9;
+  --display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0}
+body{font:16px/1.4 "Public Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--paper);color:var(--ink);-webkit-tap-highlight-color:transparent}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+
+.app{height:100vh;height:100dvh;display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;padding-top:env(safe-area-inset-top)}
+
+/* Cabeçalho */
+.top{background:var(--surface);padding:12px 16px 0}
+.top-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+h1{font:800 36px/1 var(--display);letter-spacing:.01em;margin:0}
+.sub{margin:2px 0 0;color:var(--muted);font-size:14px;font-weight:500}
+.sync{margin:1px 0 0;font-size:12.5px;font-weight:600;color:var(--muted)}
+.sync[data-s="ok"]{color:var(--blue-deep)}
+.sync[data-s="error"]{color:var(--red)}
+.icon-btn{width:44px;height:44px;border:1px solid var(--line);background:var(--surface);border-radius:12px;display:grid;place-items:center;color:var(--ink)}
+.progress{height:4px;background:var(--blue-tint);border-radius:2px;margin:10px 0 0;overflow:hidden}
+.progress span{display:block;height:100%;width:0;background:var(--red);transition:width .3s}
+.stripes{height:10px;margin:12px -16px 0;background:linear-gradient(var(--blue) 0 3px,#fff 3px 7px,var(--blue) 7px 10px)}
+
+/* Filtros */
+.filters{background:var(--surface);padding:10px 16px 12px;border-bottom:1px solid var(--line);display:grid;gap:10px;min-width:0}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);background:var(--blue-tint);border-radius:10px;padding:3px}
+.seg button{border:0;background:transparent;padding:8px;border-radius:8px;font-weight:600;color:var(--blue-deep);min-height:40px}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(18,35,47,.18)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none;min-width:0}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 12px;min-height:38px;font-weight:500;white-space:nowrap}
+.chip small{color:var(--muted);margin-left:6px;font-size:13px}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.chip[aria-pressed="true"] small{color:#B9C9D4}
+
+/* Painéis */
+.panes{min-height:0;display:flex}
+.pane{flex:1;min-width:0;min-height:0}
+.list-pane{display:flex;flex-direction:column}
+.map-pane{position:relative}
+#map{position:absolute;inset:0;background:#dfe9ee}
+.app[data-view="list"] .map-pane,.app[data-view="map"] .list-pane{display:none}
+
+.actions{display:flex;gap:8px;padding:12px 12px 4px}
+.actions .btn{flex:1}
+#list{list-style:none;margin:0;padding:0 12px 20px;overflow-y:auto;flex:1;min-height:0;-webkit-overflow-scrolling:touch}
+.empty{padding:28px 20px;text-align:center;color:var(--muted)}
+.empty h2{font:800 26px/1.1 var(--display);color:var(--ink);margin:0 0 6px}
+.empty p{margin:0 0 16px}
+.empty .stack{display:grid;gap:8px;max-width:320px;margin:0 auto}
+
+/* Botões */
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 14px;min-height:44px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;color:var(--ink)}
+.btn.primary{background:var(--blue-deep);border-color:var(--blue-deep);color:#fff}
+.btn.danger{color:var(--red);border-color:#F0C4C6}
+.btn.small{min-height:38px;padding:7px 12px;font-size:14px}
+
+/* Itens */
+.item{background:var(--surface);border:1px solid var(--line);border-radius:12px;margin-top:8px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;padding:2px 4px}
+.check{width:48px;height:48px;border:0;background:none;display:grid;place-items:center;border-radius:10px}
+.check svg{width:30px;height:30px;overflow:visible}
+.star{stroke-linejoin:round;stroke-width:1.5}
+.check[aria-checked="false"] .star{fill:none;stroke:#8FA6B5}
+.check[aria-checked="true"] .star{fill:var(--red);stroke:var(--red)}
+.body{border:0;background:none;text-align:left;padding:8px 4px;min-width:0;display:block}
+.name{display:block;font-weight:600;overflow-wrap:anywhere}
+.item[data-done="true"] .name{color:var(--muted);text-decoration:line-through;text-decoration-color:#9DB3C1}
+.meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:3px;font-size:13px;color:var(--muted)}
+.tag{background:var(--blue-tint);color:var(--blue-deep);border-radius:6px;padding:1px 8px;font-weight:600;font-size:12.5px}
+.geo.fail{color:var(--red);font-weight:600}
+.go{width:48px;height:48px;display:grid;place-items:center;color:var(--blue-deep);border-radius:10px}
+.more{grid-column:1/-1;padding:2px 10px 12px;display:grid;gap:8px}
+.more .addr,.more .note{margin:0;font-size:14px;color:var(--muted);overflow-wrap:anywhere}
+.more .row{display:flex;flex-wrap:wrap;gap:8px}
+
+/* Mapa */
+.pin{filter:drop-shadow(0 2px 2px rgba(0,0,0,.35))}
+.leaflet-popup-content{margin:12px 14px;font-family:inherit}
+.pop-name{font-weight:700;font-size:15px}
+.pop-meta{color:var(--muted);font-size:13px;margin-top:2px}
+.pop-actions{display:grid;gap:6px;margin-top:10px}
+.leaflet-container a.btn.primary{color:#fff}
+.placing{position:absolute;z-index:1000;left:12px;right:12px;top:12px;background:var(--ink);color:#fff;border-radius:12px;padding:8px 8px 8px 14px;display:flex;gap:10px;align-items:center;justify-content:space-between}
+.placing .btn{min-height:38px;padding:6px 12px}
+.map-fail{position:absolute;inset:0;display:grid;place-items:center;padding:24px;text-align:center;color:var(--muted)}
+
+/* Navegação inferior (celular) */
+.tabs{display:grid;grid-template-columns:1fr 1fr;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+.tabs button{border:0;background:none;min-height:58px;display:grid;justify-items:center;align-content:center;gap:2px;font-weight:600;font-size:13px;color:var(--muted)}
+.tabs button[aria-selected="true"]{color:var(--blue-deep);box-shadow:inset 0 3px 0 var(--blue)}
+.tabs svg{width:22px;height:22px}
+
+/* Diálogos */
+dialog{border:0;border-radius:18px 18px 0 0;padding:0;width:min(560px,100%);max-width:100%;max-height:92vh;max-height:92dvh;margin:auto auto 0;background:var(--surface);color:var(--ink);box-shadow:0 -8px 30px rgba(18,35,47,.25)}
+dialog::backdrop{background:rgba(18,35,47,.5)}
+.sheet{display:grid;gap:12px;padding:18px 16px calc(16px + env(safe-area-inset-bottom));overflow-y:auto;max-height:92vh;max-height:92dvh}
+.sheet h2{font:800 28px/1 var(--display);margin:0}
+.sheet h3{font:700 16px/1.2 "Public Sans",sans-serif;margin:8px 0 0}
+.sheet p{margin:0}
+label{display:grid;gap:5px;font-weight:600;font-size:14px}
+.hint{font-weight:400;color:var(--muted);font-size:13px}
+input,textarea{border:1px solid var(--line);border-radius:10px;padding:11px 12px;background:#fff;min-height:44px;width:100%}
+textarea{min-height:130px;resize:vertical;line-height:1.5}
+.row-end{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.row-end .btn{flex:1 1 140px}
+.err{color:var(--red);font-weight:600;font-size:14px}
+.status{color:var(--blue-deep);font-weight:600;font-size:14px;min-height:1.2em}
+.box{border:1px solid var(--line);background:var(--paper);border-radius:12px;padding:12px;display:grid;gap:10px}
+.two{display:grid;grid-template-columns:1fr 90px;gap:8px}
+
+/* Aviso */
+.toast{position:fixed;left:50%;bottom:calc(76px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:#fff;padding:8px 8px 8px 16px;border-radius:12px;display:flex;gap:10px;align-items:center;z-index:2000;max-width:calc(100% - 24px)}
+.toast button{background:none;border:0;color:#7FD0F2;font-weight:700;padding:8px 10px;min-height:40px}
+
+@media (min-width:700px){
+  dialog{margin:auto;border-radius:18px;box-shadow:0 20px 60px rgba(18,35,47,.35)}
+}
+@media (min-width:900px){
+  .app[data-view] .pane{display:flex}
+  .list-pane{flex:0 0 min(440px,42%);border-right:1px solid var(--line)}
+  .tabs{display:none}
+  .filters{grid-template-columns:260px minmax(0,1fr);align-items:center}
+  .toast{bottom:24px}
+}
+</style>
+</head>
+<body>
+<noscript>Este app precisa de JavaScript.</noscript>
+<div class="app" id="app" data-view="list">
+
+  <header class="top">
+    <div class="top-row">
+      <div>
+        <h1>Chicago</h1>
+        <p class="sub" id="progressText">Sua lista está vazia</p>
+        <p class="sync" id="syncState" data-s="local" aria-live="polite"></p>
+      </div>
+      <button class="icon-btn" id="btnData" aria-label="Backup e dados">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+      </button>
+    </div>
+    <div class="progress" aria-hidden="true"><span id="barFill"></span></div>
+    <div class="stripes" aria-hidden="true"></div>
+  </header>
+
+  <section class="filters" aria-label="Filtros">
+    <div class="seg" id="seg">
+      <button data-status="all" aria-pressed="true">Todos</button>
+      <button data-status="todo" aria-pressed="false">Faltam</button>
+      <button data-status="done" aria-pressed="false">Feitos</button>
+    </div>
+    <div class="chips" id="chips" aria-label="Filtrar por região" hidden></div>
+  </section>
+
+  <main class="panes">
+    <section class="pane list-pane" id="listPane" aria-label="Lista">
+      <div class="actions">
+        <button class="btn primary" id="btnAdd">+ Adicionar</button>
+        <button class="btn" id="btnBatch">Adicionar vários</button>
+      </div>
+      <div class="empty" id="emptyBox" hidden></div>
+      <ul id="list"></ul>
+    </section>
+    <section class="pane map-pane" id="mapPane" aria-label="Mapa">
+      <div id="map"></div>
+      <div class="placing" id="placing" hidden>
+        <span id="placingText"></span>
+        <button class="btn small" id="placingCancel">Cancelar</button>
+      </div>
+    </section>
+  </main>
+
+  <nav class="tabs" role="tablist" aria-label="Visão">
+    <button role="tab" data-view="list" aria-selected="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1" fill="currentColor"/><circle cx="4" cy="12" r="1" fill="currentColor"/><circle cx="4" cy="18" r="1" fill="currentColor"/></svg>
+      <span>Lista</span>
+    </button>
+    <button role="tab" data-view="map" aria-selected="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
+      <span>Mapa</span>
+    </button>
+  </nav>
+</div>
+
+<!-- Adicionar / editar -->
+<dialog id="formDlg" aria-labelledby="formTitle">
+  <form class="sheet" id="form" autocomplete="off">
+    <h2 id="formTitle">Novo lugar</h2>
+    <label><span>Nome</span><input id="fName" required placeholder="Ex.: Cloud Gate"></label>
+    <label><span>Endereço <small class="hint">Opcional. Ajuda a achar o ponto certo.</small></span><input id="fAddr" placeholder="201 E Randolph St"></label>
+    <label><span>Região <small class="hint">Opcional. Usada no filtro.</small></span><input id="fRegion" list="regionSuggest" placeholder="Loop"></label>
+    <label><span>Nota <small class="hint">Opcional.</small></span><input id="fNote" placeholder="Ex.: ir de manhã"></label>
+    <p class="err" id="formErr" role="alert" hidden></p>
+    <div class="row-end">
+      <button type="button" class="btn" data-close>Cancelar</button>
+      <button type="submit" class="btn primary" id="formSubmit">Adicionar</button>
+    </div>
+  </form>
+  <datalist id="regionSuggest"></datalist>
+</dialog>
+
+<!-- Adicionar vários -->
+<dialog id="batchDlg" aria-labelledby="batchTitle">
+  <div class="sheet">
+    <h2 id="batchTitle">Adicionar vários</h2>
+    <label><span>Um item por linha <small class="hint">Formato: Nome | Endereço | Região. Só o nome é obrigatório.</small></span>
+      <textarea id="bText" placeholder="Cloud Gate | 201 E Randolph St | Loop&#10;Wrigley Field | 1060 W Addison St | Lakeview&#10;Chicago Riverwalk"></textarea>
+    </label>
+    <p class="hint" id="bCount">Cole ou escreva a lista acima.</p>
+    <div class="box">
+      <strong>Gerar a lista com uma IA</strong>
+      <div class="two">
+        <label><span>Tema</span><input id="aiTheme" placeholder="Ex.: pizzarias, museus"></label>
+        <label><span>Qtde</span><input id="aiQty" type="number" min="1" max="50" value="10" inputmode="numeric"></label>
+      </div>
+      <button class="btn small" id="copyPrompt" type="button">Copiar prompt para a IA</button>
+      <p class="hint">Cole o prompt no ChatGPT, Claude ou outro, e traga a resposta para a caixa acima.</p>
+    </div>
+    <p class="status" id="bStatus" aria-live="polite"></p>
+    <div class="row-end">
+      <button type="button" class="btn" data-close>Cancelar</button>
+      <button type="button" class="btn primary" id="bAdd">Adicionar à lista</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- Dados -->
+<dialog id="dataDlg" aria-labelledby="dataTitle">
+  <div class="sheet">
+    <h2 id="dataTitle">Backup e dados</h2>
+    <p class="hint" id="dataHint"></p>
+    <h3>Backup manual</h3>
+    <textarea id="dExport" readonly rows="3" aria-label="Backup"></textarea>
+    <button class="btn" id="dCopy" type="button">Copiar backup</button>
+    <h3>Restaurar backup</h3>
+    <textarea id="dImport" rows="3" placeholder="Cole o backup aqui" aria-label="Colar backup"></textarea>
+    <div class="row-end">
+      <button class="btn" id="dMerge" type="button">Mesclar com a lista</button>
+      <button class="btn" id="dReplace" type="button">Substituir tudo</button>
+    </div>
+    <p class="status" id="dStatus" aria-live="polite"></p>
+    <button class="btn danger" id="dWipe" type="button">Apagar tudo</button>
+    <button class="btn" type="button" data-close>Fechar</button>
+  </div>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden>
+  <span></span><button type="button">Desfazer</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script>
+(() => {
+'use strict';
+
+const KEY = 'chicago-checklist-v1';
+const STAR = '12,2 14.89,7 20.66,7 17.77,12 20.66,17 14.89,17 12,22 9.11,17 3.34,17 6.23,12 3.34,7 9.11,7';
+const SUGGEST = ['Loop','West Loop','South Loop','River North','Near North Side','Gold Coast','Streeterville','Old Town','Lincoln Park','Lakeview','Wicker Park','Logan Square','Pilsen','Chinatown','Hyde Park','Uptown','Andersonville','Greektown','Bronzeville','Fulton Market'];
+const SAMPLES = [
+  ['Cloud Gate (The Bean)','201 E Randolph St','Loop',41.8827,-87.6233],
+  ['Art Institute of Chicago','111 S Michigan Ave','Loop',41.8796,-87.6237],
+  ['Skydeck Chicago (Willis Tower)','233 S Wacker Dr','Loop',41.8789,-87.6359],
+  ['Navy Pier','600 E Grand Ave','Streeterville',41.8917,-87.6086],
+  ['Wrigley Field','1060 W Addison St','Lakeview',41.9484,-87.6553],
+  ['Lincoln Park Zoo','2001 N Clark St','Lincoln Park',41.9212,-87.6337],
+  ['Museum of Science and Industry','5700 S DuSable Lake Shore Dr','Hyde Park',41.7906,-87.5830],
+  ['Garfield Park Conservatory','300 N Central Park Ave','East Garfield Park',41.8862,-87.7168]
+];
+
+const CFG = window.APP_CONFIG || {};
+const TABLE = 'places';
+const SEEDED = 'chicago-cloud-seeded';
+const WANT_CLOUD = !!(CFG.supabaseUrl && CFG.supabaseKey) && !/COLE_AQUI/.test(CFG.supabaseUrl + CFG.supabaseKey);
+const CLOUD = WANT_CLOUD && !!window.supabase;
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+const STAR_SVG = `<svg viewBox="0 0 24 24" aria-hidden="true"><polygon class="star" points="${STAR}"/></svg>`;
+const PIN_SVG = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>';
+
+let items = [];
+const ui = { status: 'all', region: 'all', view: 'list', openId: null, placingId: null, editingId: null, fitNext: true };
+
+/* ---------- dados ---------- */
+function clean(o) {
+  if (!o || typeof o !== 'object') return null;
+  const name = String(o.name || '').trim();
+  if (!name) return null;
+  const hasGeo = o.lat != null && o.lat !== '' && o.lng != null && o.lng !== '' && Number.isFinite(+o.lat) && Number.isFinite(+o.lng);
+  return {
+    id: o.id || uid(), name,
+    address: String(o.address || '').trim(),
+    region: String(o.region || '').trim(),
+    note: String(o.note || '').trim(),
+    done: !!o.done,
+    lat: hasGeo ? +o.lat : undefined,
+    lng: hasGeo ? +o.lng : undefined,
+    geo: hasGeo ? 'ok' : (o.geo === 'fail' ? 'fail' : 'pending'),
+    manual: !!o.manual,
+    ts: Number.isFinite(+o.ts) && o.ts != null ? +o.ts : Date.now()
+  };
+}
+function load() {
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (raw) { const d = JSON.parse(raw); if (Array.isArray(d)) items = d.map(clean).filter(Boolean); }
+  } catch (e) { /* sem dados salvos */ }
+}
+function cache() {
+  try { localStorage.setItem(KEY, JSON.stringify(items)); return true; }
+  catch (e) { return false; }
+}
+function save() {
+  if (!cache() && !CLOUD) toast('Não foi possível salvar neste navegador.');
+  if (CLOUD) pushChanges();
+}
+const hasGeo = i => Number.isFinite(i.lat) && Number.isFinite(i.lng);
+const regionOf = i => i.region || 'Sem região';
+const nameKey = s => String(s).trim().toLowerCase();
+function canonRegion(r) {
+  r = (r || '').trim(); if (!r) return '';
+  const ex = items.find(i => i.region && i.region.toLowerCase() === r.toLowerCase());
+  return ex ? ex.region : r;
+}
+function regionList() {
+  const m = new Map();
+  items.forEach(i => {
+    const name = regionOf(i), key = name.toLowerCase();
+    if (!m.has(key)) m.set(key, { key, name, n: 0 });
+    m.get(key).n++;
+  });
+  return [...m.values()].sort((a, b) => a.name.localeCompare(b.name));
+}
+function visible() {
+  return items.filter(i =>
+    (ui.status === 'all' || (ui.status === 'done') === i.done) &&
+    (ui.region === 'all' || regionOf(i).toLowerCase() === ui.region));
+}
+const mapsUrl = i => 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(i.name + ' ' + (i.address || 'Chicago, IL'));
+
+/* ---------- nuvem (Supabase) ---------- */
+let sb = null, syncChain = Promise.resolve();
+const remote = new Map();
+const SYNC_TEXT = { local: 'Só neste aparelho', loading: 'Conectando à nuvem…', saving: 'Salvando…', ok: 'Nuvem sincronizada', error: 'Sem conexão com a nuvem', nolib: 'Não foi possível carregar a nuvem' };
+function setSync(s) { const el = $('#syncState'); el.dataset.s = s === 'saving' || s === 'loading' ? 'ok' : s; el.textContent = SYNC_TEXT[s] || ''; }
+const rowOf = i => ({ id: i.id, name: i.name, address: i.address, region: i.region, note: i.note, done: i.done,
+  lat: hasGeo(i) ? i.lat : null, lng: hasGeo(i) ? i.lng : null, geo: i.geo, manual: i.manual, ts: i.ts });
+const sig = i => JSON.stringify(rowOf(i));
+const fromRow = r => clean({ id: r.id, name: r.name, address: r.address, region: r.region, note: r.note, done: r.done,
+  lat: r.lat, lng: r.lng, geo: r.geo, manual: r.manual, ts: r.ts });
+const byNewest = (a, b) => b.ts - a.ts;
+function diff() {
+  const seen = new Set(), up = [];
+  items.forEach(i => { seen.add(i.id); if (remote.get(i.id) !== sig(i)) up.push(i); });
+  const del = [...remote.keys()].filter(id => !seen.has(id));
+  return { up, del };
+}
+async function doSync() {
+  const { up, del } = diff();
+  if (!up.length && !del.length) return;
+  setSync('saving');
+  try {
+    if (up.length) {
+      const { error } = await sb.from(TABLE).upsert(up.map(rowOf));
+      if (error) throw error;
+      up.forEach(i => remote.set(i.id, sig(i)));
+    }
+    if (del.length) {
+      const { error } = await sb.from(TABLE).delete().in('id', del);
+      if (error) throw error;
+      del.forEach(id => remote.delete(id));
+    }
+    setSync('ok');
+  } catch (e) {
+    setSync('error');
+    toast('Não deu para salvar na nuvem. Confira a conexão.');
+  }
+}
+function pushChanges() { syncChain = syncChain.then(doSync); return syncChain; }
+async function pull(first) {
+  if (!first) { await pushChanges(); }
+  const { data, error } = await sb.from(TABLE).select('*').order('ts', { ascending: false });
+  if (error) { setSync('error'); return false; }
+  const rows = data.map(fromRow).filter(Boolean);
+  remote.clear(); rows.forEach(r => remote.set(r.id, sig(r)));
+  let next = rows;
+  if (first) {
+    let seeded = false;
+    try { seeded = !!localStorage.getItem(SEEDED); } catch (e) { /* ignora */ }
+    if (!seeded) {
+      const names = new Set(rows.map(r => nameKey(r.name)));
+      next = rows.concat(items.filter(i => !names.has(nameKey(i.name))));
+      try { localStorage.setItem(SEEDED, '1'); } catch (e) { /* ignora */ }
+    }
+  }
+  items = next.sort(byNewest);
+  cache(); setSync('ok');
+  const d = diff();
+  if (d.up.length || d.del.length) pushChanges();
+  render();
+  items.filter(i => i.geo === 'pending').forEach(i => queueGeo(i.id));
+  return true;
+}
+function onRemoteChange(p) {
+  if (p.eventType === 'DELETE') {
+    const id = p.old && p.old.id; if (!id) return;
+    remote.delete(id);
+    const k = items.findIndex(i => i.id === id);
+    if (k >= 0) { items.splice(k, 1); if (ui.openId === id) ui.openId = null; afterRemote(); }
+    return;
+  }
+  const it = p.new && fromRow(p.new); if (!it) return;
+  remote.set(it.id, sig(it));
+  const k = items.findIndex(i => i.id === it.id);
+  if (k >= 0) { if (sig(items[k]) === sig(it)) return; items[k] = it; } else items.push(it);
+  afterRemote();
+}
+function afterRemote() { items.sort(byNewest); cache(); ui.fitNext = false; render(); }
+async function cloudInit() {
+  if (WANT_CLOUD && !window.supabase) { setSync('nolib'); return; }
+  if (!CLOUD) { setSync('local'); return; }
+  sb = window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseKey);
+  setSync('loading');
+  const ok = await pull(true);
+  sb.channel('places-live').on('postgres_changes', { event: '*', schema: 'public', table: TABLE }, onRemoteChange).subscribe();
+  if (!ok) setSync('error');
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') pull(false); });
+  window.addEventListener('online', () => pull(false));
+  setInterval(() => { if (document.visibilityState === 'visible') pull(false); }, 60000);
+}
+
+/* ---------- aviso ---------- */
+let toastTimer;
+function toast(msg, undoFn) {
+  const t = $('#toast'), b = t.querySelector('button');
+  t.querySelector('span').textContent = msg;
+  b.hidden = !undoFn;
+  b.onclick = () => { if (undoFn) undoFn(); t.hidden = true; };
+  t.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.hidden = true; }, undoFn ? 6000 : 3500);
+}
+function flash(el, msg) {
+  el.textContent = msg;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.textContent = ''; }, 4000);
+}
+async function copyText(t) {
+  try { await navigator.clipboard.writeText(t); return true; }
+  catch (e) {
+    const ta = document.createElement('textarea');
+    ta.value = t; ta.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(ta); ta.select();
+    let ok = false;
+    try { ok = document.execCommand('copy'); } catch (_) { /* ignora */ }
+    ta.remove(); return ok;
+  }
+}
+
+/* ---------- geocodificação (OpenStreetMap / Nominatim) ---------- */
+const geoQueue = []; let geoBusy = false, lastReq = 0;
+function queueGeo(id) { if (!geoQueue.includes(id)) geoQueue.push(id); runGeo(); }
+async function nominatim(q) {
+  const wait = Math.max(0, 1100 - (Date.now() - lastReq));
+  if (wait) await sleep(wait);
+  lastReq = Date.now();
+  const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&bounded=1&viewbox=-88.3,42.3,-87.3,41.4&q=' + encodeURIComponent(q);
+  const r = await fetch(url);
+  if (!r.ok) throw new Error('http ' + r.status);
+  const d = await r.json();
+  return d && d[0] ? { lat: +d[0].lat, lng: +d[0].lon } : null;
+}
+async function geocode(it) {
+  const city = /chicago|,\s*il\b|illinois/i;
+  const tries = [];
+  if (it.address) tries.push(city.test(it.address) ? it.address : it.address + ', Chicago, IL');
+  tries.push(it.name + ', Chicago, IL');
+  if (it.address) tries.push(it.name + ' ' + it.address);
+  for (const q of tries) { const r = await nominatim(q); if (r) return r; }
+  return null;
+}
+async function runGeo() {
+  if (geoBusy) return;
+  geoBusy = true;
+  while (geoQueue.length) {
+    const id = geoQueue.shift();
+    const it = items.find(x => x.id === id);
+    if (!it || it.geo !== 'pending') continue;
+    let res = null;
+    try { res = await geocode(it); } catch (e) { res = null; }
+    const cur = items.find(x => x.id === id);
+    if (!cur) continue;
+    if (res) { cur.lat = res.lat; cur.lng = res.lng; cur.geo = 'ok'; } else { cur.geo = 'fail'; }
+    save();
+    ui.fitNext = geoQueue.length === 0;
+    render();
+  }
+  geoBusy = false;
+}
+
+/* ---------- mapa ---------- */
+let map = null, layer = null; const markers = new Map();
+function pinIcon(done) {
+  const color = done ? '#D8232A' : '#0B6B97';
+  const inner = done
+    ? `<polygon transform="translate(7.4 7.4) scale(.55)" fill="#fff" points="${STAR}"/>`
+    : '<circle cx="14" cy="14" r="5" fill="#fff"/>';
+  return L.divIcon({
+    className: 'pin',
+    html: `<svg width="28" height="36" viewBox="0 0 28 36" aria-hidden="true"><path d="M14 1C6.7 1 1 6.9 1 14c0 9.6 13 21 13 21s13-11.4 13-21C27 6.9 21.3 1 14 1z" fill="${color}" stroke="#fff" stroke-width="1.5"/>${inner}</svg>`,
+    iconSize: [28, 36], iconAnchor: [14, 35], popupAnchor: [0, -32]
+  });
+}
+function initMap() {
+  if (!window.L) {
+    $('#map').innerHTML = '<div class="map-fail"><p>Não foi possível carregar o mapa. Confira a conexão e recarregue a página. A lista continua funcionando.</p></div>';
+    return;
+  }
+  map = L.map('map').setView([41.8781, -87.6298], 11);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    maxZoom: 19, subdomains: 'abcd',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+  }).addTo(map);
+  layer = L.layerGroup().addTo(map);
+  map.on('click', e => { if (ui.placingId) finishPlacing(e.latlng); });
+  map.on('popupopen', e => {
+    const el = e.popup.getElement();
+    if (!el) return;
+    el.querySelectorAll('[data-pop="toggle"]').forEach(b => b.addEventListener('click', () => {
+      const it = items.find(x => x.id === b.dataset.id);
+      if (!it) return;
+      it.done = !it.done; save(); map.closePopup(); render();
+    }));
+  });
+}
+function popupHTML(i) {
+  return `<div><div class="pop-name">${esc(i.name)}</div>
+    <div class="pop-meta">${esc(regionOf(i))}</div>
+    ${i.address ? `<div class="pop-meta">${esc(i.address)}</div>` : ''}
+    <div class="pop-actions">
+      <a class="btn primary small" href="${mapsUrl(i)}" target="_blank" rel="noopener">Abrir no Google Maps</a>
+      <button class="btn small" data-pop="toggle" data-id="${esc(i.id)}">${i.done ? 'Desmarcar' : 'Marcar como feito'}</button>
+    </div></div>`;
+}
+function renderMap() {
+  if (!map) return;
+  layer.clearLayers(); markers.clear();
+  const vis = visible().filter(hasGeo);
+  vis.forEach(i => {
+    const m = L.marker([i.lat, i.lng], { icon: pinIcon(i.done), title: i.name }).bindPopup(() => popupHTML(i));
+    m.addTo(layer); markers.set(i.id, m);
+  });
+  const sized = $('#map').clientWidth > 0;
+  if (ui.fitNext && sized) {
+    if (vis.length) map.fitBounds(L.latLngBounds(vis.map(i => [i.lat, i.lng])), { padding: [40, 40], maxZoom: 15 });
+    ui.fitNext = false;
+  }
+}
+function startPlacing(it) {
+  if (!map) return;
+  ui.placingId = it.id; setView('map');
+  $('#placingText').textContent = `Toque no mapa para posicionar “${it.name}”`;
+  $('#placing').hidden = false;
+  map.getContainer().style.cursor = 'crosshair';
+}
+function cancelPlacing() {
+  ui.placingId = null; $('#placing').hidden = true;
+  if (map) map.getContainer().style.cursor = '';
+}
+function finishPlacing(ll) {
+  const it = items.find(x => x.id === ui.placingId);
+  cancelPlacing();
+  if (!it) return;
+  it.lat = ll.lat; it.lng = ll.lng; it.geo = 'ok'; it.manual = true;
+  save(); render();
+  map.setView(ll, Math.max(map.getZoom(), 15));
+  toast('Posição salva.');
+}
+
+/* ---------- renderização ---------- */
+function render() {
+  renderHeader(); renderChips(); renderList(); renderMap();
+}
+function renderHeader() {
+  const d = items.filter(i => i.done).length;
+  $('#progressText').textContent = items.length ? `${d} de ${items.length} feitos` : 'Sua lista está vazia';
+  $('#barFill').style.width = items.length ? (d / items.length * 100) + '%' : '0';
+  $('#regionSuggest').innerHTML = [...new Set([...SUGGEST, ...items.map(i => i.region).filter(Boolean)])].map(r => `<option value="${esc(r)}">`).join('');
+}
+function renderChips() {
+  const rs = regionList();
+  if (ui.region !== 'all' && !rs.some(r => r.key === ui.region)) ui.region = 'all';
+  const el = $('#chips');
+  el.hidden = !rs.length;
+  el.innerHTML = rs.length
+    ? `<button class="chip" data-region="all" aria-pressed="${ui.region === 'all'}">Todas<small>${items.length}</small></button>` +
+      rs.map(r => `<button class="chip" data-region="${esc(r.key)}" aria-pressed="${ui.region === r.key}">${esc(r.name)}<small>${r.n}</small></button>`).join('')
+    : '';
+  document.querySelectorAll('#seg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.status === ui.status)));
+}
+function moreHTML(i) {
+  return `<div class="more">
+    ${i.address ? `<p class="addr">${esc(i.address)}</p>` : ''}
+    ${i.note ? `<p class="note">${esc(i.note)}</p>` : ''}
+    <div class="row">
+      ${hasGeo(i) ? '<button class="btn small" data-act="show">Ver no mapa</button>' : ''}
+      ${i.geo === 'fail' ? '<button class="btn small" data-act="retry">Tentar de novo</button>' : ''}
+      ${map ? `<button class="btn small" data-act="place">${hasGeo(i) ? 'Reposicionar' : 'Marcar no mapa'}</button>` : ''}
+      <button class="btn small" data-act="edit">Editar</button>
+      <button class="btn small danger" data-act="del">Excluir</button>
+    </div></div>`;
+}
+function itemHTML(i) {
+  const open = ui.openId === i.id;
+  const geoTxt = i.geo === 'pending' ? 'Localizando…' : i.geo === 'fail' ? 'Sem posição no mapa' : '';
+  return `<li class="item" data-id="${esc(i.id)}" data-done="${i.done}">
+    <button class="check" role="checkbox" aria-checked="${i.done}" aria-label="Marcar ${esc(i.name)} como feito" data-act="toggle">${STAR_SVG}</button>
+    <button class="body" data-act="open" aria-expanded="${open}">
+      <span class="name">${esc(i.name)}</span>
+      <span class="meta"><span class="tag">${esc(regionOf(i))}</span>${geoTxt ? `<span class="geo ${i.geo}">${geoTxt}</span>` : ''}</span>
+    </button>
+    <a class="go" href="${mapsUrl(i)}" target="_blank" rel="noopener" aria-label="Abrir ${esc(i.name)} no Google Maps">${PIN_SVG}</a>
+    ${open ? moreHTML(i) : ''}
+  </li>`;
+}
+function renderList() {
+  const vis = visible().slice().sort((a, b) => a.done - b.done);
+  $('#list').innerHTML = vis.map(itemHTML).join('');
+  const box = $('#emptyBox');
+  if (!items.length) {
+    box.hidden = false;
+    box.innerHTML = `<h2>Nada por aqui ainda</h2><p>Adicione o primeiro lugar. Ele aparece no mapa sozinho.</p>
+      <div class="stack"><button class="btn primary" data-empty="add">Adicionar um lugar</button>
+      <button class="btn" data-empty="batch">Adicionar vários</button>
+      <button class="btn" data-empty="samples">Carregar 8 exemplos</button></div>`;
+  } else if (!vis.length) {
+    box.hidden = false;
+    box.innerHTML = `<h2>Nenhum item com esses filtros</h2><p>Troque o filtro para ver outros itens.</p>
+      <div class="stack"><button class="btn" data-empty="clear">Limpar filtros</button></div>`;
+  } else {
+    box.hidden = true; box.innerHTML = '';
+  }
+}
+function setView(v) {
+  ui.view = v;
+  $('#app').dataset.view = v;
+  document.querySelectorAll('.tabs button').forEach(t => t.setAttribute('aria-selected', String(t.dataset.view === v)));
+  if (map) setTimeout(() => { map.invalidateSize(); renderMap(); }, 0);
+}
+
+/* ---------- ações ---------- */
+function removeItem(it) {
+  const idx = items.indexOf(it);
+  if (idx < 0) return;
+  items.splice(idx, 1);
+  if (ui.openId === it.id) ui.openId = null;
+  save(); render();
+  toast('Item excluído', () => { items.splice(Math.min(idx, items.length), 0, it); save(); render(); });
+}
+function act(name, it) {
+  switch (name) {
+    case 'toggle': it.done = !it.done; save(); render(); break;
+    case 'open': ui.openId = ui.openId === it.id ? null : it.id; renderList(); break;
+    case 'show':
+      if (!hasGeo(it) || !map) return;
+      setView('map');
+      setTimeout(() => {
+        map.setView([it.lat, it.lng], Math.max(map.getZoom(), 16));
+        const m = markers.get(it.id); if (m) m.openPopup();
+      }, 120);
+      break;
+    case 'edit': openForm(it); break;
+    case 'del': removeItem(it); break;
+    case 'retry': it.geo = 'pending'; save(); render(); queueGeo(it.id); break;
+    case 'place': startPlacing(it); break;
+  }
+}
+
+/* ---------- formulário (um item) ---------- */
+function openForm(it) {
+  ui.editingId = it ? it.id : null;
+  $('#formTitle').textContent = it ? 'Editar lugar' : 'Novo lugar';
+  $('#formSubmit').textContent = it ? 'Salvar' : 'Adicionar';
+  $('#fName').value = it ? it.name : '';
+  $('#fAddr').value = it ? it.address : '';
+  $('#fRegion').value = it ? it.region : '';
+  $('#fNote').value = it ? it.note : '';
+  $('#formErr').hidden = true;
+  $('#formDlg').showModal();
+  if (!it) $('#fName').focus();
+}
+$('#form').addEventListener('submit', e => {
+  e.preventDefault();
+  const name = $('#fName').value.trim(), address = $('#fAddr').value.trim();
+  const region = canonRegion($('#fRegion').value), note = $('#fNote').value.trim();
+  const err = $('#formErr');
+  if (!name) return;
+  const dup = items.find(i => nameKey(i.name) === nameKey(name) && i.id !== ui.editingId);
+  if (dup) { err.textContent = 'Já existe um item com esse nome.'; err.hidden = false; return; }
+  if (ui.editingId) {
+    const it = items.find(x => x.id === ui.editingId);
+    if (it) {
+      const moved = it.name !== name || it.address !== address;
+      Object.assign(it, { name, address, region, note });
+      if (moved) { it.lat = undefined; it.lng = undefined; it.geo = 'pending'; it.manual = false; queueGeo(it.id); }
+    }
+    ui.fitNext = false;
+  } else {
+    const it = clean({ name, address, region, note });
+    items.unshift(it);
+    ui.status = 'all'; ui.region = 'all'; ui.fitNext = true;
+    queueGeo(it.id);
+  }
+  save(); render();
+  $('#formDlg').close();
+});
+
+/* ---------- adicionar vários ---------- */
+function parseBatch(text) {
+  text = text.trim();
+  if (!text) return [];
+  if (text[0] === '[') {
+    try {
+      const arr = JSON.parse(text);
+      if (Array.isArray(arr)) return arr.map(o => ({
+        name: String(o.name || o.nome || '').trim(),
+        address: String(o.address || o.endereco || o['endereço'] || '').trim(),
+        region: String(o.region || o.regiao || o['região'] || o.bairro || '').trim(),
+        note: String(o.note || o.nota || '').trim()
+      })).filter(o => o.name);
+    } catch (e) { /* segue como texto */ }
+  }
+  return text.split(/\r?\n/)
+    .map(l => l.replace(/^\s*(?:[-*•]|\d+[.)])\s*/, '').replace(/^\s*\|/, '').replace(/\|\s*$/, '').trim())
+    .filter(l => l && !/^[-\s|:]+$/.test(l))
+    .map(l => {
+      const [name, address, region, note] = l.split('|').map(s => s.trim());
+      return { name: name || '', address: address || '', region: region || '', note: note || '' };
+    })
+    .filter(o => o.name);
+}
+$('#bText').addEventListener('input', () => {
+  const n = parseBatch($('#bText').value).length;
+  $('#bCount').textContent = n ? `${n} ${n === 1 ? 'item reconhecido' : 'itens reconhecidos'}.` : 'Cole ou escreva a lista acima.';
+});
+$('#copyPrompt').addEventListener('click', async () => {
+  const n = Math.max(1, Math.min(50, +$('#aiQty').value || 10));
+  const th = $('#aiTheme').value.trim();
+  const p = `Liste ${n} coisas para fazer em Chicago${th ? ' sobre: ' + th : ''}. Responda só com uma linha por item, neste formato exato:\nNome do lugar | Endereço completo, Chicago, IL | Bairro\nSem numeração, sem títulos e sem texto extra. Use apenas lugares reais e endereços que você tenha certeza que existem.`;
+  flash($('#bStatus'), (await copyText(p)) ? 'Prompt copiado. Cole na sua IA.' : 'Não foi possível copiar.');
+});
+$('#bAdd').addEventListener('click', () => {
+  const parsed = parseBatch($('#bText').value);
+  if (!parsed.length) { flash($('#bStatus'), 'Nenhum item reconhecido.'); return; }
+  const seen = new Set(items.map(i => nameKey(i.name)));
+  const fresh = []; let dups = 0;
+  parsed.forEach(o => {
+    const k = nameKey(o.name);
+    if (seen.has(k)) { dups++; return; }
+    seen.add(k);
+    fresh.push(clean({ name: o.name, address: o.address, region: canonRegion(o.region), note: o.note, ts: 0 }));
+  });
+  if (!fresh.length) { flash($('#bStatus'), 'Todos esses itens já estão na lista.'); return; }
+  const base = Date.now();
+  fresh.forEach((f, k) => { f.ts = base + (fresh.length - k); });
+  items.unshift(...fresh);
+  ui.status = 'all'; ui.region = 'all'; ui.fitNext = true;
+  save(); render();
+  fresh.forEach(i => queueGeo(i.id));
+  $('#batchDlg').close();
+  $('#bText').value = ''; $('#bCount').textContent = 'Cole ou escreva a lista acima.';
+  toast(`${fresh.length} ${fresh.length === 1 ? 'item adicionado' : 'itens adicionados'}${dups ? `, ${dups} repetido${dups > 1 ? 's' : ''} ignorado${dups > 1 ? 's' : ''}` : ''}.`);
+});
+
+/* ---------- backup ---------- */
+const exportJSON = () => JSON.stringify({ app: 'chicago-checklist', v: 1, items });
+function openData() {
+  $('#dataHint').textContent = CLOUD
+    ? 'A lista fica na nuvem e aparece em todos os aparelhos. O backup abaixo é só uma cópia de segurança.'
+    : 'Sem nuvem configurada: os dados ficam só neste aparelho. Use o backup para levar a lista para outro.';
+  $('#dExport').value = exportJSON();
+  $('#dImport').value = ''; $('#dStatus').textContent = '';
+  $('#dataDlg').showModal();
+}
+function readImport() {
+  const txt = $('#dImport').value.trim();
+  if (!txt) { flash($('#dStatus'), 'Cole o backup na caixa acima.'); return null; }
+  try {
+    const d = JSON.parse(txt);
+    const arr = Array.isArray(d) ? d : d.items;
+    const list = (arr || []).map(clean).filter(Boolean);
+    if (!list.length) throw new Error('vazio');
+    return list;
+  } catch (e) { flash($('#dStatus'), 'Esse texto não parece um backup válido.'); return null; }
+}
+function afterImport(msg) {
+  ui.status = 'all'; ui.region = 'all'; ui.fitNext = true;
+  items.sort(byNewest);
+  save(); render();
+  items.filter(i => i.geo === 'pending').forEach(i => queueGeo(i.id));
+  $('#dataDlg').close(); toast(msg);
+}
+$('#dCopy').addEventListener('click', async () => {
+  $('#dExport').value = exportJSON();
+  flash($('#dStatus'), (await copyText($('#dExport').value)) ? 'Backup copiado.' : 'Selecione o texto acima e copie.');
+});
+$('#dMerge').addEventListener('click', () => {
+  const list = readImport(); if (!list) return;
+  let added = 0;
+  list.forEach(n => {
+    const ex = items.find(i => nameKey(i.name) === nameKey(n.name));
+    if (ex) { ex.done = ex.done || n.done; }
+    else { if (items.some(i => i.id === n.id)) n.id = uid(); items.push(n); added++; }
+  });
+  afterImport(`${added} novo${added === 1 ? '' : 's'} item${added === 1 ? '' : 's'} adicionado${added === 1 ? '' : 's'}.`);
+});
+$('#dReplace').addEventListener('click', () => {
+  const list = readImport(); if (!list) return;
+  if (!confirm('Substituir toda a lista pelo backup?' + (CLOUD ? ' Isso vale para todos os aparelhos.' : ''))) return;
+  items = list; ui.openId = null;
+  afterImport('Lista substituída.');
+});
+$('#dWipe').addEventListener('click', () => {
+  if (!confirm('Apagar todos os itens?' + (CLOUD ? ' Isso vale para todos os aparelhos.' : '') + ' Não dá para desfazer.')) return;
+  items = []; ui.openId = null; save(); render();
+  $('#dataDlg').close(); toast('Lista apagada.');
+});
+
+/* ---------- eventos gerais ---------- */
+$('#list').addEventListener('click', e => {
+  const b = e.target.closest('[data-act]');
+  if (!b) return;
+  const li = b.closest('.item');
+  const it = li && items.find(x => x.id === li.dataset.id);
+  if (it) act(b.dataset.act, it);
+});
+$('#chips').addEventListener('click', e => {
+  const b = e.target.closest('.chip'); if (!b) return;
+  ui.region = b.dataset.region; ui.fitNext = true; render();
+});
+$('#seg').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  ui.status = b.dataset.status; ui.fitNext = true; render();
+});
+document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => setView(b.dataset.view)));
+$('#btnAdd').addEventListener('click', () => openForm(null));
+$('#btnBatch').addEventListener('click', () => { $('#bStatus').textContent = ''; $('#batchDlg').showModal(); });
+$('#btnData').addEventListener('click', openData);
+$('#placingCancel').addEventListener('click', cancelPlacing);
+$('#emptyBox').addEventListener('click', e => {
+  const b = e.target.closest('[data-empty]'); if (!b) return;
+  const k = b.dataset.empty;
+  if (k === 'add') openForm(null);
+  else if (k === 'batch') { $('#bStatus').textContent = ''; $('#batchDlg').showModal(); }
+  else if (k === 'clear') { ui.status = 'all'; ui.region = 'all'; ui.fitNext = true; render(); }
+  else if (k === 'samples') {
+    const base = Date.now();
+    SAMPLES.forEach((s, k) => items.push(clean({ name: s[0], address: s[1], region: s[2], lat: s[3], lng: s[4], ts: base + (SAMPLES.length - k) })));
+    items.sort(byNewest);
+    ui.fitNext = true; save(); render();
+  }
+});
+document.addEventListener('click', e => {
+  const c = e.target.closest('[data-close]');
+  if (c) c.closest('dialog').close();
+});
+window.addEventListener('resize', () => { if (map) map.invalidateSize(); });
+
+/* ---------- início ---------- */
+load();
+items.sort(byNewest);
+initMap();
+render();
+if (CLOUD) cloudInit();
+else { setSync(WANT_CLOUD ? 'nolib' : 'local'); items.filter(i => i.geo === 'pending').forEach(i => queueGeo(i.id)); }
+})();
+</script>
+</body>
+</html>
