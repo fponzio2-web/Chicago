@@ -43,7 +43,13 @@ h1{font:800 28px/1 var(--display);letter-spacing:.01em;margin:0}
 .dot[data-s="ok"]{background:#2E9E5B}
 .dot[data-s="busy"]{background:var(--blue)}
 .dot[data-s="error"],.dot[data-s="nolib"]{background:var(--red)}
-.icon-btn{width:40px;height:40px;border:1px solid var(--line);background:var(--surface);border-radius:10px;display:grid;place-items:center;color:var(--ink)}
+.icon-btn{position:relative;width:40px;height:40px;border:1px solid var(--line);background:var(--surface);border-radius:10px;display:grid;place-items:center;color:var(--ink)}
+.icon-btn .dot-badge{position:absolute;top:3px;right:3px;width:9px;height:9px;border-radius:50%;background:var(--red);border:2px solid var(--surface)}
+.menu-list{display:grid;gap:2px}
+.menu-item{display:flex;align-items:center;justify-content:space-between;gap:10px;border:0;background:none;text-align:left;padding:14px 6px;border-radius:10px;font-weight:600;font-size:15.5px;color:var(--ink);min-height:48px;border-bottom:1px solid var(--line)}
+.menu-item:last-child{border-bottom:0}
+.menu-item:active{background:var(--paper)}
+.count-badge{background:var(--red);color:#fff;border-radius:999px;min-width:22px;height:22px;padding:0 6px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
 .stripes{height:6px;margin:6px -12px 0;background:linear-gradient(var(--blue) 0 2px,#fff 2px 4px,var(--blue) 4px 6px)}
 .syncbar{margin:0 -12px;background:#FDECEC;color:var(--red);font-size:13px;font-weight:600;padding:6px 14px;border-bottom:1px solid #F0C4C6}
 
@@ -58,11 +64,12 @@ h1{font:800 28px/1 var(--display);letter-spacing:.01em;margin:0}
 .chip small{color:var(--muted);margin-left:6px;font-size:13px}
 .chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
 .chip[aria-pressed="true"] small{color:#B9C9D4}
-.filter-row{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
-.group-toggle{display:flex;background:var(--blue-tint);border-radius:10px;padding:3px;flex:none}
-.group-toggle button{border:0;background:transparent;padding:6px 12px;border-radius:8px;font-weight:600;font-size:13.5px;color:var(--blue-deep);min-height:34px}
+.group-toggle{display:grid;grid-template-columns:repeat(2,1fr);background:var(--blue-tint);border-radius:10px;padding:3px}
+.group-toggle button{border:0;background:transparent;padding:7px;border-radius:8px;font-weight:600;font-size:14px;color:var(--blue-deep);min-height:36px}
 .group-toggle button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(18,35,47,.18)}
-.sort-select{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:6px 10px;min-height:34px;font-weight:600;font-size:13.5px;color:var(--ink);flex:none;max-width:100%}
+.sort-row{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:2px}
+.sort-row label{font-size:13px;color:var(--muted);font-weight:600;white-space:nowrap}
+.sort-select{border:1px solid var(--line);background:var(--surface);border-radius:9px;padding:6px 10px;min-height:34px;font-weight:600;font-size:13.5px;color:var(--ink);max-width:70%}
 
 /* Painéis */
 .panes{min-height:0;display:flex}
@@ -98,7 +105,16 @@ h1{font:800 28px/1 var(--display);letter-spacing:.01em;margin:0}
 .item[data-done="true"] .name{color:var(--muted);text-decoration:line-through;text-decoration-color:#9DB3C1}
 .meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:3px;font-size:13px;color:var(--muted)}
 .tag{background:var(--blue-tint);color:var(--blue-deep);border-radius:6px;padding:1px 8px;font-weight:600;font-size:12.5px}
-.tag.cat{background:var(--red-tint);color:var(--red)}
+.tag.cat{background:#ECEFF2;color:#586C7A}
+.tag.cat.c-atracao{background:#FDF0D5;color:#92620B}
+.tag.cat.c-museu{background:#EDE3F7;color:#6B3FA0}
+.tag.cat.c-parque{background:#E1F3E6;color:#1E7A42}
+.tag.cat.c-restaurante{background:var(--red-tint);color:var(--red)}
+.tag.cat.c-fastfood{background:#FCE7DA;color:#C1560B}
+.tag.cat.c-barcafe{background:#F1E4D6;color:#7A4B22}
+.tag.cat.c-compras{background:#FBE3EE;color:#B3236F}
+.tag.cat.c-evento{background:#DDF3F0;color:#147A6C}
+.tag.cat.c-outro{background:#ECEFF2;color:#586C7A}
 .tag.cat.unset{background:var(--paper);color:var(--muted);border:1px dashed var(--line)}
 .geo.fail{color:var(--red);font-weight:600}
 .go{width:48px;height:48px;display:grid;place-items:center;color:var(--blue-deep);border-radius:10px}
@@ -202,8 +218,9 @@ textarea{min-height:130px;resize:vertical;line-height:1.5}
       <div class="tools">
         <span class="sync" id="syncState"></span>
         <span class="dot" id="syncDot" data-s="local" role="img" aria-label="Só neste aparelho" title="Só neste aparelho"></span>
-        <button class="icon-btn" id="btnData" aria-label="Backup e dados">
+        <button class="icon-btn" id="btnData" aria-label="Mais opções">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+          <span class="dot-badge" id="dataDot" hidden></span>
         </button>
       </div>
     </div>
@@ -217,11 +234,12 @@ textarea{min-height:130px;resize:vertical;line-height:1.5}
       <button data-status="todo" aria-pressed="false">Faltam</button>
       <button data-status="done" aria-pressed="false">Feitos</button>
     </div>
-    <div class="filter-row">
-      <div class="group-toggle" id="groupToggle" role="group" aria-label="Agrupar por">
-        <button data-group="region" aria-pressed="true">Região</button>
-        <button data-group="category" aria-pressed="false">Categoria</button>
-      </div>
+    <div class="group-toggle" id="groupToggle" role="group" aria-label="Agrupar por">
+      <button data-group="region" aria-pressed="true">Região</button>
+      <button data-group="category" aria-pressed="false">Categoria</button>
+    </div>
+    <div class="sort-row">
+      <label for="sortSelect">Ordenar</label>
       <select class="sort-select" id="sortSelect" aria-label="Ordenar">
         <option value="recent">Mais recentes</option>
         <option value="name">Nome (A–Z)</option>
@@ -238,7 +256,6 @@ textarea{min-height:130px;resize:vertical;line-height:1.5}
       <div class="actions">
         <button class="btn primary" id="btnAdd">+ Adicionar</button>
         <button class="btn" id="btnBatch">Adicionar vários</button>
-        <button class="btn" id="btnClassify">Classificar</button>
       </div>
       <div class="empty" id="emptyBox" hidden></div>
       <ul id="list"></ul>
@@ -303,6 +320,22 @@ textarea{min-height:130px;resize:vertical;line-height:1.5}
     <div class="row-end">
       <button type="button" class="btn" data-close>Cancelar</button>
       <button type="button" class="btn primary" id="bAdd">Adicionar à lista</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- Mais opções -->
+<dialog id="moreDlg" aria-labelledby="moreTitle">
+  <div class="sheet">
+    <h2 id="moreTitle">Mais opções</h2>
+    <div class="menu-list">
+      <button class="menu-item" id="menuClassify" type="button">
+        <span>Classificar itens</span>
+        <span class="count-badge" id="classifyBadge" hidden>0</span>
+      </button>
+      <button class="menu-item" id="menuData" type="button">
+        <span>Backup e dados</span>
+      </button>
     </div>
   </div>
 </dialog>
@@ -466,6 +499,9 @@ function canonCategory(text) {
   text = (text || '').trim(); if (!text) return '';
   return CAT_MAP.get(nameKey(text)) || 'Outro';
 }
+const CAT_SLUG = { 'Atração': 'atracao', 'Museu': 'museu', 'Parque': 'parque', 'Restaurante': 'restaurante',
+  'Fast food': 'fastfood', 'Bar / Café': 'barcafe', 'Compras': 'compras', 'Evento': 'evento', 'Outro': 'outro' };
+const catTagClass = i => i.category ? 'tag cat c-' + (CAT_SLUG[i.category] || 'outro') : 'tag cat unset';
 function regionList() {
   const m = new Map();
   items.forEach(i => {
@@ -767,6 +803,7 @@ function renderHeader() {
   const catOpts = '<option value="">Sem categoria</option>' + CATEGORIES.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
   const fc = $('#fCategory');
   if (fc && !fc.dataset.filled) { fc.innerHTML = catOpts; fc.dataset.filled = '1'; }
+  $('#dataDot').hidden = !items.some(i => !i.category);
 }
 function renderChips() {
   const isCat = ui.groupBy === 'category';
@@ -812,7 +849,7 @@ function itemHTML(i) {
     <button class="check" role="checkbox" aria-checked="${i.done}" aria-label="Marcar ${esc(i.name)} como feito" data-act="toggle">${STAR_SVG}</button>
     <button class="body" data-act="open" aria-expanded="${open}">
       <span class="name">${esc(i.name)}</span>
-      <span class="meta"><span class="tag">${esc(regionOf(i))}</span><span class="tag cat${i.category ? '' : ' unset'}">${esc(categoryOf(i))}</span>${geoTxt ? `<span class="geo ${i.geo}">${geoTxt}</span>` : ''}</span>
+      <span class="meta"><span class="tag">${esc(regionOf(i))}</span><span class="${catTagClass(i)}">${esc(categoryOf(i))}</span>${geoTxt ? `<span class="geo ${i.geo}">${geoTxt}</span>` : ''}</span>
     </button>
     <a class="go" href="${mapsUrl(i)}" target="_blank" rel="noopener" aria-label="Abrir ${esc(i.name)} no Google Maps">${PIN_SVG}</a>
     ${i.done ? rateRow(i) : ''}
@@ -1000,11 +1037,11 @@ function refreshClassifyCount() {
   const n = items.filter(i => !i.category).length;
   $('#classifyCount').textContent = n ? `${n} ${n === 1 ? 'item ainda não tem' : 'itens ainda não têm'} categoria.` : 'Todos os itens já têm categoria. ✓';
 }
-$('#btnClassify').addEventListener('click', () => {
+function openClassify() {
   $('#cStatus').textContent = ''; $('#cText').value = '';
   refreshClassifyCount();
   $('#classifyDlg').showModal();
-});
+}
 $('#copyClassifyPrompt').addEventListener('click', async () => {
   const { text, n } = buildClassifyPrompt();
   if (!n) { flash($('#cStatus'), 'Todos os itens já têm categoria, nada para classificar.'); return; }
@@ -1113,7 +1150,14 @@ $('#seg').addEventListener('click', e => {
 document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => setView(b.dataset.view)));
 $('#btnAdd').addEventListener('click', () => openForm(null));
 $('#btnBatch').addEventListener('click', () => { $('#bStatus').textContent = ''; $('#batchDlg').showModal(); });
-$('#btnData').addEventListener('click', openData);
+$('#btnData').addEventListener('click', () => {
+  const n = items.filter(i => !i.category).length;
+  const b = $('#classifyBadge');
+  b.hidden = !n; b.textContent = n;
+  $('#moreDlg').showModal();
+});
+$('#menuClassify').addEventListener('click', () => { $('#moreDlg').close(); openClassify(); });
+$('#menuData').addEventListener('click', () => { $('#moreDlg').close(); openData(); });
 $('#placingCancel').addEventListener('click', cancelPlacing);
 $('#emptyBox').addEventListener('click', e => {
   const b = e.target.closest('[data-empty]'); if (!b) return;
