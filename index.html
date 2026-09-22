@@ -17,7 +17,7 @@
 :root{
   --paper:#F6F9FB; --surface:#FFFFFF; --ink:#12232F; --muted:#586C7A;
   --blue:#41B6E6; --blue-deep:#0B6B97; --blue-tint:#E3F4FB;
-  --red:#D8232A; --line:#D5E1E9;
+  --red:#D8232A; --red-tint:#FBE4E2; --line:#D5E1E9;
   --display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
   color-scheme:light;
 }
@@ -58,6 +58,11 @@ h1{font:800 28px/1 var(--display);letter-spacing:.01em;margin:0}
 .chip small{color:var(--muted);margin-left:6px;font-size:13px}
 .chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
 .chip[aria-pressed="true"] small{color:#B9C9D4}
+.filter-row{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.group-toggle{display:flex;background:var(--blue-tint);border-radius:10px;padding:3px;flex:none}
+.group-toggle button{border:0;background:transparent;padding:6px 12px;border-radius:8px;font-weight:600;font-size:13.5px;color:var(--blue-deep);min-height:34px}
+.group-toggle button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(18,35,47,.18)}
+.sort-select{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:6px 10px;min-height:34px;font-weight:600;font-size:13.5px;color:var(--ink);flex:none;max-width:100%}
 
 /* Painéis */
 .panes{min-height:0;display:flex}
@@ -67,8 +72,8 @@ h1{font:800 28px/1 var(--display);letter-spacing:.01em;margin:0}
 #map{position:absolute;inset:0;background:#dfe9ee}
 .app[data-view="list"] .map-pane,.app[data-view="map"] .list-pane{display:none}
 
-.actions{display:flex;gap:8px;padding:10px 12px 2px}
-.actions .btn{flex:1}
+.actions{display:flex;flex-wrap:wrap;gap:8px;padding:10px 12px 2px}
+.actions .btn{flex:1 1 130px}
 #list{list-style:none;margin:0;padding:0 12px 20px;overflow-y:auto;flex:1;min-height:0;-webkit-overflow-scrolling:touch}
 .empty{padding:28px 20px;text-align:center;color:var(--muted)}
 .empty h2{font:800 26px/1.1 var(--display);color:var(--ink);margin:0 0 6px}
@@ -93,6 +98,8 @@ h1{font:800 28px/1 var(--display);letter-spacing:.01em;margin:0}
 .item[data-done="true"] .name{color:var(--muted);text-decoration:line-through;text-decoration-color:#9DB3C1}
 .meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:3px;font-size:13px;color:var(--muted)}
 .tag{background:var(--blue-tint);color:var(--blue-deep);border-radius:6px;padding:1px 8px;font-weight:600;font-size:12.5px}
+.tag.cat{background:var(--red-tint);color:var(--red)}
+.tag.cat.unset{background:var(--paper);color:var(--muted);border:1px dashed var(--line)}
 .geo.fail{color:var(--red);font-weight:600}
 .go{width:48px;height:48px;display:grid;place-items:center;color:var(--blue-deep);border-radius:10px}
 .rate-row{grid-column:2/-1;display:flex;align-items:center;gap:0;padding:0 4px 6px}
@@ -104,6 +111,9 @@ h1{font:800 28px/1 var(--display);letter-spacing:.01em;margin:0}
 .more{grid-column:1/-1;padding:2px 10px 12px;display:grid;gap:8px}
 .more .addr,.more .note{margin:0;font-size:14px;color:var(--muted);overflow-wrap:anywhere}
 .more .row{display:flex;flex-wrap:wrap;gap:8px}
+.more .quickcat{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.more .quickcat label{font-size:13px;color:var(--muted);font-weight:600}
+.more .quickcat select{width:auto;min-height:38px;padding:6px 10px;font-size:14px}
 
 /* Mapa */
 .pin{filter:drop-shadow(0 2px 2px rgba(0,0,0,.35))}
@@ -131,7 +141,8 @@ dialog::backdrop{background:rgba(18,35,47,.5)}
 .sheet p{margin:0}
 label{display:grid;gap:5px;font-weight:600;font-size:14px}
 .hint{font-weight:400;color:var(--muted);font-size:13px}
-input,textarea{border:1px solid var(--line);border-radius:10px;padding:11px 12px;background:#fff;min-height:44px;width:100%}
+input,textarea,select{border:1px solid var(--line);border-radius:10px;padding:11px 12px;background:#fff;min-height:44px;width:100%}
+select{appearance:auto}
 textarea{min-height:130px;resize:vertical;line-height:1.5}
 .row-end{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
 .row-end .btn{flex:1 1 140px}
@@ -206,7 +217,20 @@ textarea{min-height:130px;resize:vertical;line-height:1.5}
       <button data-status="todo" aria-pressed="false">Faltam</button>
       <button data-status="done" aria-pressed="false">Feitos</button>
     </div>
-    <div class="chips" id="chips" aria-label="Filtrar por região" hidden></div>
+    <div class="filter-row">
+      <div class="group-toggle" id="groupToggle" role="group" aria-label="Agrupar por">
+        <button data-group="region" aria-pressed="true">Região</button>
+        <button data-group="category" aria-pressed="false">Categoria</button>
+      </div>
+      <select class="sort-select" id="sortSelect" aria-label="Ordenar">
+        <option value="recent">Mais recentes</option>
+        <option value="name">Nome (A–Z)</option>
+        <option value="region">Região (A–Z)</option>
+        <option value="category">Categoria (A–Z)</option>
+        <option value="rating">Nota (maior primeiro)</option>
+      </select>
+    </div>
+    <div class="chips" id="chips" aria-label="Filtrar" hidden></div>
   </section>
 
   <main class="panes">
@@ -214,6 +238,7 @@ textarea{min-height:130px;resize:vertical;line-height:1.5}
       <div class="actions">
         <button class="btn primary" id="btnAdd">+ Adicionar</button>
         <button class="btn" id="btnBatch">Adicionar vários</button>
+        <button class="btn" id="btnClassify">Classificar</button>
       </div>
       <div class="empty" id="emptyBox" hidden></div>
       <ul id="list"></ul>
@@ -246,6 +271,7 @@ textarea{min-height:130px;resize:vertical;line-height:1.5}
     <label><span>Nome</span><input id="fName" required placeholder="Ex.: Cloud Gate"></label>
     <label><span>Endereço <small class="hint">Opcional. Ajuda a achar o ponto certo.</small></span><input id="fAddr" placeholder="201 E Randolph St"></label>
     <label><span>Região <small class="hint">Opcional. Usada no filtro.</small></span><input id="fRegion" list="regionSuggest" placeholder="Loop"></label>
+    <label><span>Categoria <small class="hint">Opcional.</small></span><select id="fCategory"></select></label>
     <label><span>Nota <small class="hint">Opcional.</small></span><input id="fNote" placeholder="Ex.: ir de manhã"></label>
     <p class="err" id="formErr" role="alert" hidden></p>
     <div class="row-end">
@@ -260,8 +286,8 @@ textarea{min-height:130px;resize:vertical;line-height:1.5}
 <dialog id="batchDlg" aria-labelledby="batchTitle">
   <div class="sheet">
     <h2 id="batchTitle">Adicionar vários</h2>
-    <label><span>Um item por linha <small class="hint">Formato: Nome | Endereço | Região. Só o nome é obrigatório.</small></span>
-      <textarea id="bText" placeholder="Cloud Gate | 201 E Randolph St | Loop&#10;Wrigley Field | 1060 W Addison St | Lakeview&#10;Chicago Riverwalk"></textarea>
+    <label><span>Um item por linha <small class="hint">Formato: Nome | Endereço | Região | Categoria. Só o nome é obrigatório.</small></span>
+      <textarea id="bText" placeholder="Cloud Gate | 201 E Randolph St | Loop | Atração&#10;Wrigley Field | 1060 W Addison St | Lakeview | Atração&#10;Chicago Riverwalk"></textarea>
     </label>
     <p class="hint" id="bCount">Cole ou escreva a lista acima.</p>
     <div class="box">
@@ -271,12 +297,30 @@ textarea{min-height:130px;resize:vertical;line-height:1.5}
         <label><span>Qtde</span><input id="aiQty" type="number" min="1" max="50" value="10" inputmode="numeric"></label>
       </div>
       <button class="btn small" id="copyPrompt" type="button">Copiar prompt para a IA</button>
-      <p class="hint">O prompt já leva a sua lista (para a IA não repetir) e as notas que você deu (para ela sugerir o que você tende a gostar). Cole no ChatGPT, Claude ou outro e traga a resposta para a caixa acima.</p>
+      <p class="hint">O prompt já leva a sua lista (para a IA não repetir), as notas que você deu e pede a categoria de cada item. Cole no ChatGPT, Claude ou outro e traga a resposta para a caixa acima.</p>
     </div>
     <p class="status" id="bStatus" aria-live="polite"></p>
     <div class="row-end">
       <button type="button" class="btn" data-close>Cancelar</button>
       <button type="button" class="btn primary" id="bAdd">Adicionar à lista</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- Classificar existentes -->
+<dialog id="classifyDlg" aria-labelledby="classifyTitle">
+  <div class="sheet">
+    <h2 id="classifyTitle">Classificar itens</h2>
+    <p class="hint">Gere um prompt pedindo a categoria de cada item sem categoria, cole a resposta da IA abaixo e aplique de uma vez.</p>
+    <button class="btn" id="copyClassifyPrompt" type="button">Copiar prompt para a IA</button>
+    <p class="hint" id="classifyCount"></p>
+    <label><span>Resposta da IA <small class="hint">Formato: Nome | Categoria</small></span>
+      <textarea id="cText" placeholder="Cloud Gate (The Bean) | Atração&#10;Gibsons Bar &amp; Steakhouse | Restaurante"></textarea>
+    </label>
+    <p class="status" id="cStatus" aria-live="polite"></p>
+    <div class="row-end">
+      <button type="button" class="btn" data-close>Cancelar</button>
+      <button type="button" class="btn primary" id="cApply">Aplicar categorias</button>
     </div>
   </div>
 </dialog>
@@ -315,27 +359,40 @@ textarea{min-height:130px;resize:vertical;line-height:1.5}
 const KEY = 'chicago-checklist-v1';
 const STAR = '12,2 14.89,7 20.66,7 17.77,12 20.66,17 14.89,17 12,22 9.11,17 3.34,17 6.23,12 3.34,7 9.11,7';
 const SUGGEST = ['Loop','West Loop','South Loop','River North','Near North Side','Gold Coast','Streeterville','Old Town','Lincoln Park','Lakeview','Wicker Park','Logan Square','Pilsen','Chinatown','Hyde Park','Uptown','Andersonville','Greektown','Bronzeville','Fulton Market'];
+const CATEGORIES = ['Atração', 'Museu', 'Parque', 'Restaurante', 'Fast food', 'Bar / Café', 'Compras', 'Evento', 'Outro'];
+const CAT_SYNONYMS = [
+  ['atracao', 'Atração'], ['attraction', 'Atração'], ['tourist attraction', 'Atração'], ['ponto turistico', 'Atração'], ['landmark', 'Atração'],
+  ['museu', 'Museu'], ['museum', 'Museu'], ['galeria', 'Museu'], ['gallery', 'Museu'], ['art gallery', 'Museu'],
+  ['parque', 'Parque'], ['park', 'Parque'], ['jardim', 'Parque'], ['garden', 'Parque'], ['zoo', 'Parque'], ['zoologico', 'Parque'], ['praia', 'Parque'], ['beach', 'Parque'],
+  ['restaurante', 'Restaurante'], ['restaurant', 'Restaurante'], ['pizzaria', 'Restaurante'], ['steakhouse', 'Restaurante'],
+  ['fast food', 'Fast food'], ['fastfood', 'Fast food'], ['lanchonete', 'Fast food'], ['burger', 'Fast food'], ['hamburgueria', 'Fast food'],
+  ['bar', 'Bar / Café'], ['bar cafe', 'Bar / Café'], ['cafe', 'Bar / Café'], ['coffee', 'Bar / Café'], ['coffee shop', 'Bar / Café'], ['pub', 'Bar / Café'], ['cafeteria', 'Bar / Café'],
+  ['compras', 'Compras'], ['shopping', 'Compras'], ['loja', 'Compras'], ['store', 'Compras'], ['mercado', 'Compras'], ['market', 'Compras'],
+  ['evento', 'Evento'], ['show', 'Evento'], ['teatro', 'Evento'], ['theatre', 'Evento'], ['theater', 'Evento'], ['musica', 'Evento'], ['concert', 'Evento'], ['esporte', 'Evento'], ['sports', 'Evento'],
+  ['outro', 'Outro'], ['other', 'Outro']
+];
 const SAMPLES = [
-  ['Cloud Gate (The Bean)','201 E Randolph St','Loop',41.8827,-87.6233],
-  ['Art Institute of Chicago','111 S Michigan Ave','Loop',41.8796,-87.6237],
-  ['Skydeck Chicago (Willis Tower)','233 S Wacker Dr','Loop',41.8789,-87.6359],
-  ['Navy Pier','600 E Grand Ave','Streeterville',41.8917,-87.6086],
-  ['Wrigley Field','1060 W Addison St','Lakeview',41.9484,-87.6553],
-  ['Lincoln Park Zoo','2001 N Clark St','Lincoln Park',41.9212,-87.6337],
-  ['Museum of Science and Industry','5700 S DuSable Lake Shore Dr','Hyde Park',41.7906,-87.5830],
-  ['Garfield Park Conservatory','300 N Central Park Ave','East Garfield Park',41.8862,-87.7168]
+  ['Cloud Gate (The Bean)','201 E Randolph St','Loop',41.8827,-87.6233,'Atração'],
+  ['Art Institute of Chicago','111 S Michigan Ave','Loop',41.8796,-87.6237,'Museu'],
+  ['Skydeck Chicago (Willis Tower)','233 S Wacker Dr','Loop',41.8789,-87.6359,'Atração'],
+  ['Navy Pier','600 E Grand Ave','Streeterville',41.8917,-87.6086,'Atração'],
+  ['Wrigley Field','1060 W Addison St','Lakeview',41.9484,-87.6553,'Evento'],
+  ['Lincoln Park Zoo','2001 N Clark St','Lincoln Park',41.9212,-87.6337,'Parque'],
+  ['Museum of Science and Industry','5700 S DuSable Lake Shore Dr','Hyde Park',41.7906,-87.5830,'Museu'],
+  ['Garfield Park Conservatory','300 N Central Park Ave','East Garfield Park',41.8862,-87.7168,'Parque']
 ];
 
 const CFG = window.APP_CONFIG || {};
 const LOCK_KEY = 'chicago-unlock-v1';
-const WANT_LOCK = !!CFG.passcodeHash && !/COLE_AQUI/i.test(CFG.passcodeHash);
+const RAW_HASH = String(CFG.passcodeHash || '').trim().toLowerCase();
+const WANT_LOCK = !!RAW_HASH && !/COLE_AQUI/i.test(RAW_HASH) && /^[0-9a-f]{64}$/.test(RAW_HASH);
 async function sha256Hex(text) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
   return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
 }
 async function isUnlocked() {
   if (!WANT_LOCK) return true;
-  try { return localStorage.getItem(LOCK_KEY) === CFG.passcodeHash; } catch (e) { return false; }
+  try { return localStorage.getItem(LOCK_KEY) === RAW_HASH; } catch (e) { return false; }
 }
 function revealApp() {
   $('#lockScreen').hidden = true;
@@ -356,7 +413,7 @@ const HEART_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path class="h" d
 const PIN_SVG = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>';
 
 let items = [];
-const ui = { status: 'all', region: 'all', view: 'list', openId: null, placingId: null, editingId: null, fitNext: true };
+const ui = { status: 'all', groupBy: 'region', groupValue: 'all', sort: 'recent', view: 'list', openId: null, placingId: null, editingId: null, fitNext: true };
 
 /* ---------- dados ---------- */
 function clean(o) {
@@ -368,6 +425,7 @@ function clean(o) {
     id: o.id || uid(), name,
     address: String(o.address || '').trim(),
     region: String(o.region || '').trim(),
+    category: String(o.category || '').trim(),
     note: String(o.note || '').trim(),
     done: !!o.done,
     lat: hasGeo ? +o.lat : undefined,
@@ -394,12 +452,19 @@ function save() {
 }
 const hasGeo = i => Number.isFinite(i.lat) && Number.isFinite(i.lng);
 const regionOf = i => i.region || 'Sem região';
+const categoryOf = i => i.category || 'Sem categoria';
 const nameKey = s => String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
   .replace(/\(.*?\)/g, ' ').replace(/['’`]/g, '').replace(/[^a-z0-9]+/g, ' ').replace(/^(the|a|an) /, '').trim();
 function canonRegion(r) {
   r = (r || '').trim(); if (!r) return '';
   const ex = items.find(i => i.region && i.region.toLowerCase() === r.toLowerCase());
   return ex ? ex.region : r;
+}
+const CAT_MAP = new Map(CAT_SYNONYMS.map(([k, v]) => [nameKey(k), v]));
+CATEGORIES.forEach(c => CAT_MAP.set(nameKey(c), c));
+function canonCategory(text) {
+  text = (text || '').trim(); if (!text) return '';
+  return CAT_MAP.get(nameKey(text)) || 'Outro';
 }
 function regionList() {
   const m = new Map();
@@ -408,12 +473,29 @@ function regionList() {
     if (!m.has(key)) m.set(key, { key, name, n: 0 });
     m.get(key).n++;
   });
-  return [...m.values()].sort((a, b) => a.name.localeCompare(b.name));
+  return [...m.values()].sort((a, b) => a.name.localeCompare(b.name, 'pt'));
 }
+function categoryList() {
+  const m = new Map();
+  items.forEach(i => {
+    const name = categoryOf(i), key = name.toLowerCase();
+    if (!m.has(key)) m.set(key, { key, name, n: 0 });
+    m.get(key).n++;
+  });
+  return [...m.values()].sort((a, b) => a.name.localeCompare(b.name, 'pt'));
+}
+const SORTS = {
+  recent: (a, b) => b.ts - a.ts,
+  name: (a, b) => a.name.localeCompare(b.name, 'pt'),
+  region: (a, b) => regionOf(a).localeCompare(regionOf(b), 'pt') || a.name.localeCompare(b.name, 'pt'),
+  category: (a, b) => categoryOf(a).localeCompare(categoryOf(b), 'pt') || a.name.localeCompare(b.name, 'pt'),
+  rating: (a, b) => (b.rating || 0) - (a.rating || 0) || a.name.localeCompare(b.name, 'pt')
+};
 function visible() {
+  const getter = ui.groupBy === 'category' ? categoryOf : regionOf;
   return items.filter(i =>
     (ui.status === 'all' || (ui.status === 'done') === i.done) &&
-    (ui.region === 'all' || regionOf(i).toLowerCase() === ui.region));
+    (ui.groupValue === 'all' || getter(i).toLowerCase() === ui.groupValue));
 }
 const mapsUrl = i => 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(i.name + ' ' + (i.address || 'Chicago, IL'));
 
@@ -433,16 +515,17 @@ function setSync(s, detail) {
 function describeErr(e) {
   const m = String((e && (e.message || e.details)) || e || ''), c = e && e.code;
   if (/rating/i.test(m)) return 'falta a coluna da nota (rode o SQL novo no Supabase)';
+  if (/category/i.test(m)) return 'falta a coluna da categoria (rode o SQL novo no Supabase)';
   if (c === 'PGRST205' || c === '42P01' || /does not exist|schema cache/i.test(m)) return 'tabela não encontrada (rode o SQL no Supabase)';
   if (c === '42501' || /row-level security|permission denied/i.test(m)) return 'sem permissão (rode o SQL da política)';
   if (c === 'PGRST301' || /invalid api key|jwt|apikey/i.test(m)) return 'chave inválida (confira o config.js)';
   if (/failed to fetch|network|load failed/i.test(m)) return 'URL errada ou sem internet (confira o config.js)';
   return m.slice(0, 90) || 'erro desconhecido';
 }
-const rowOf = i => ({ id: i.id, name: i.name, address: i.address, region: i.region, note: i.note, done: i.done, rating: i.rating,
+const rowOf = i => ({ id: i.id, name: i.name, address: i.address, region: i.region, category: i.category, note: i.note, done: i.done, rating: i.rating,
   lat: hasGeo(i) ? i.lat : null, lng: hasGeo(i) ? i.lng : null, geo: i.geo, manual: i.manual, ts: i.ts });
 const sig = i => JSON.stringify(rowOf(i));
-const fromRow = r => clean({ id: r.id, name: r.name, address: r.address, region: r.region, note: r.note, done: r.done, rating: r.rating,
+const fromRow = r => clean({ id: r.id, name: r.name, address: r.address, region: r.region, category: r.category, note: r.note, done: r.done, rating: r.rating,
   lat: r.lat, lng: r.lng, geo: r.geo, manual: r.manual, ts: r.ts });
 const byNewest = (a, b) => b.ts - a.ts;
 function diff() {
@@ -631,7 +714,7 @@ function initMap() {
 }
 function popupHTML(i) {
   return `<div><div class="pop-name">${esc(i.name)}</div>
-    <div class="pop-meta">${esc(regionOf(i))}</div>
+    <div class="pop-meta">${esc(regionOf(i))}${i.category ? ' · ' + esc(i.category) : ''}</div>
     ${i.address ? `<div class="pop-meta">${esc(i.address)}</div>` : ''}
     <div class="pop-actions">
       <a class="btn primary small" href="${mapsUrl(i)}" target="_blank" rel="noopener">Abrir no Google Maps</a>
@@ -681,22 +764,34 @@ function renderHeader() {
   const d = items.filter(i => i.done).length;
   $('#progressText').textContent = items.length ? `${d} de ${items.length} feitos` : 'Lista vazia';
   $('#regionSuggest').innerHTML = [...new Set([...SUGGEST, ...items.map(i => i.region).filter(Boolean)])].map(r => `<option value="${esc(r)}">`).join('');
+  const catOpts = '<option value="">Sem categoria</option>' + CATEGORIES.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+  const fc = $('#fCategory');
+  if (fc && !fc.dataset.filled) { fc.innerHTML = catOpts; fc.dataset.filled = '1'; }
 }
 function renderChips() {
-  const rs = regionList();
-  if (ui.region !== 'all' && !rs.some(r => r.key === ui.region)) ui.region = 'all';
+  const isCat = ui.groupBy === 'category';
+  const rs = isCat ? categoryList() : regionList();
+  if (ui.groupValue !== 'all' && !rs.some(r => r.key === ui.groupValue)) ui.groupValue = 'all';
   const el = $('#chips');
+  el.setAttribute('aria-label', isCat ? 'Filtrar por categoria' : 'Filtrar por região');
   el.hidden = !rs.length;
   el.innerHTML = rs.length
-    ? `<button class="chip" data-region="all" aria-pressed="${ui.region === 'all'}">Todas<small>${items.length}</small></button>` +
-      rs.map(r => `<button class="chip" data-region="${esc(r.key)}" aria-pressed="${ui.region === r.key}">${esc(r.name)}<small>${r.n}</small></button>`).join('')
+    ? `<button class="chip" data-val="all" aria-pressed="${ui.groupValue === 'all'}">Todas<small>${items.length}</small></button>` +
+      rs.map(r => `<button class="chip" data-val="${esc(r.key)}" aria-pressed="${ui.groupValue === r.key}">${esc(r.name)}<small>${r.n}</small></button>`).join('')
     : '';
   document.querySelectorAll('#seg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.status === ui.status)));
+  document.querySelectorAll('#groupToggle button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.group === ui.groupBy)));
+  $('#sortSelect').value = ui.sort;
 }
 function moreHTML(i) {
+  const catOpts = ['', ...CATEGORIES].map(c => `<option value="${esc(c)}" ${c === (i.category || '') ? 'selected' : ''}>${c ? esc(c) : 'Sem categoria'}</option>`).join('');
   return `<div class="more">
     ${i.address ? `<p class="addr">${esc(i.address)}</p>` : ''}
     ${i.note ? `<p class="note">${esc(i.note)}</p>` : ''}
+    <div class="quickcat">
+      <label for="qc-${esc(i.id)}">Categoria</label>
+      <select id="qc-${esc(i.id)}" data-act="quickcat">${catOpts}</select>
+    </div>
     <div class="row">
       ${hasGeo(i) ? '<button class="btn small" data-act="show">Ver no mapa</button>' : ''}
       ${i.geo === 'fail' ? '<button class="btn small" data-act="retry">Tentar de novo</button>' : ''}
@@ -717,7 +812,7 @@ function itemHTML(i) {
     <button class="check" role="checkbox" aria-checked="${i.done}" aria-label="Marcar ${esc(i.name)} como feito" data-act="toggle">${STAR_SVG}</button>
     <button class="body" data-act="open" aria-expanded="${open}">
       <span class="name">${esc(i.name)}</span>
-      <span class="meta"><span class="tag">${esc(regionOf(i))}</span>${geoTxt ? `<span class="geo ${i.geo}">${geoTxt}</span>` : ''}</span>
+      <span class="meta"><span class="tag">${esc(regionOf(i))}</span><span class="tag cat${i.category ? '' : ' unset'}">${esc(categoryOf(i))}</span>${geoTxt ? `<span class="geo ${i.geo}">${geoTxt}</span>` : ''}</span>
     </button>
     <a class="go" href="${mapsUrl(i)}" target="_blank" rel="noopener" aria-label="Abrir ${esc(i.name)} no Google Maps">${PIN_SVG}</a>
     ${i.done ? rateRow(i) : ''}
@@ -725,7 +820,8 @@ function itemHTML(i) {
   </li>`;
 }
 function renderList() {
-  const vis = visible().slice().sort((a, b) => a.done - b.done);
+  const cmp = SORTS[ui.sort] || SORTS.recent;
+  const vis = visible().slice().sort((a, b) => (a.done - b.done) || cmp(a, b));
   $('#list').innerHTML = vis.map(itemHTML).join('');
   const box = $('#emptyBox');
   if (!items.length) {
@@ -761,6 +857,7 @@ function removeItem(it) {
 function act(name, it, btn) {
   switch (name) {
     case 'rate': { const n = +btn.dataset.rate; it.rating = it.rating === n ? 0 : n; save(); renderList(); break; }
+    case 'quickcat': it.category = btn.value; save(); renderList(); break;
     case 'toggle': it.done = !it.done; save(); render(); break;
     case 'open': ui.openId = ui.openId === it.id ? null : it.id; renderList(); break;
     case 'show':
@@ -786,6 +883,7 @@ function openForm(it) {
   $('#fName').value = it ? it.name : '';
   $('#fAddr').value = it ? it.address : '';
   $('#fRegion').value = it ? it.region : '';
+  $('#fCategory').value = it ? (it.category || '') : '';
   $('#fNote').value = it ? it.note : '';
   $('#formErr').hidden = true;
   $('#formDlg').showModal();
@@ -794,7 +892,7 @@ function openForm(it) {
 $('#form').addEventListener('submit', e => {
   e.preventDefault();
   const name = $('#fName').value.trim(), address = $('#fAddr').value.trim();
-  const region = canonRegion($('#fRegion').value), note = $('#fNote').value.trim();
+  const region = canonRegion($('#fRegion').value), category = $('#fCategory').value, note = $('#fNote').value.trim();
   const err = $('#formErr');
   if (!name) return;
   const dup = items.find(i => nameKey(i.name) === nameKey(name) && i.id !== ui.editingId);
@@ -803,14 +901,14 @@ $('#form').addEventListener('submit', e => {
     const it = items.find(x => x.id === ui.editingId);
     if (it) {
       const moved = it.name !== name || it.address !== address;
-      Object.assign(it, { name, address, region, note });
+      Object.assign(it, { name, address, region, category, note });
       if (moved) { it.lat = undefined; it.lng = undefined; it.geo = 'pending'; it.manual = false; queueGeo(it.id); }
     }
     ui.fitNext = false;
   } else {
-    const it = clean({ name, address, region, note });
+    const it = clean({ name, address, region, category, note });
     items.unshift(it);
-    ui.status = 'all'; ui.region = 'all'; ui.fitNext = true;
+    ui.status = 'all'; ui.groupValue = 'all'; ui.fitNext = true;
     queueGeo(it.id);
   }
   save(); render();
@@ -828,6 +926,7 @@ function parseBatch(text) {
         name: String(o.name || o.nome || '').trim(),
         address: String(o.address || o.endereco || o['endereço'] || '').trim(),
         region: String(o.region || o.regiao || o['região'] || o.bairro || '').trim(),
+        category: String(o.category || o.categoria || o.tipo || '').trim(),
         note: String(o.note || o.nota || '').trim()
       })).filter(o => o.name);
     } catch (e) { /* segue como texto */ }
@@ -836,8 +935,8 @@ function parseBatch(text) {
     .map(l => l.replace(/^\s*(?:[-*•]|\d+[.)])\s*/, '').replace(/^\s*\|/, '').replace(/\|\s*$/, '').trim())
     .filter(l => l && !/^[-\s|:]+$/.test(l))
     .map(l => {
-      const [name, address, region, note] = l.split('|').map(s => s.trim());
-      return { name: name || '', address: address || '', region: region || '', note: note || '' };
+      const [name, address, region, category, note] = l.split('|').map(s => s.trim());
+      return { name: name || '', address: address || '', region: region || '', category: category || '', note: note || '' };
     })
     .filter(o => o.name);
 }
@@ -860,7 +959,7 @@ function buildPrompt() {
     if (nope.length) p += `Não gostei (1 a 2): ${list(nope)}\n`;
     p += 'Use isso para entender meu gosto: sugira coisas parecidas com as que gostei e evite o estilo das que não gostei.\n';
   }
-  p += '\nResponda só com uma linha por item, neste formato exato:\nNome do lugar | Endereço completo, Chicago, IL | Bairro\nSem numeração, sem títulos e sem texto extra. Use apenas lugares reais e endereços que você tenha certeza que existem.';
+  p += `\nResponda só com uma linha por item, neste formato exato:\nNome do lugar | Endereço completo, Chicago, IL | Bairro | Categoria\nA categoria deve ser uma destas, exatamente como está escrita: ${CATEGORIES.join(', ')}.\nSem numeração, sem títulos e sem texto extra. Use apenas lugares reais e endereços que você tenha certeza que existem.`;
   return { text: p, total: items.length, rated: rated.length };
 }
 $('#copyPrompt').addEventListener('click', async () => {
@@ -877,18 +976,56 @@ $('#bAdd').addEventListener('click', () => {
     const k = nameKey(o.name);
     if (seen.has(k)) { dups++; return; }
     seen.add(k);
-    fresh.push(clean({ name: o.name, address: o.address, region: canonRegion(o.region), note: o.note, ts: 0 }));
+    fresh.push(clean({ name: o.name, address: o.address, region: canonRegion(o.region), category: canonCategory(o.category), note: o.note, ts: 0 }));
   });
   if (!fresh.length) { flash($('#bStatus'), 'Todos esses itens já estão na lista.'); return; }
   const base = Date.now();
   fresh.forEach((f, k) => { f.ts = base + (fresh.length - k); });
   items.unshift(...fresh);
-  ui.status = 'all'; ui.region = 'all'; ui.fitNext = true;
+  ui.status = 'all'; ui.groupValue = 'all'; ui.fitNext = true;
   save(); render();
   fresh.forEach(i => queueGeo(i.id));
   $('#batchDlg').close();
   $('#bText').value = ''; $('#bCount').textContent = 'Cole ou escreva a lista acima.';
   toast(`${fresh.length} ${fresh.length === 1 ? 'item adicionado' : 'itens adicionados'}${dups ? `, ${dups} repetido${dups > 1 ? 's' : ''} ignorado${dups > 1 ? 's' : ''}` : ''}.`);
+});
+
+/* ---------- classificar existentes ---------- */
+function buildClassifyPrompt() {
+  const todo = items.filter(i => !i.category);
+  const p = `Para cada item da lista abaixo (lugares em Chicago), diga a categoria mais adequada, escolhendo só entre estas opções: ${CATEGORIES.join(', ')}.\nResponda uma linha por item, exatamente neste formato:\nNome do lugar | Categoria\nUse o nome exatamente como está abaixo, sem numeração nem texto extra.\n\nItens:\n${todo.map(i => i.name + (i.address ? ' - ' + i.address : '')).join('\n')}`;
+  return { text: p, n: todo.length };
+}
+function refreshClassifyCount() {
+  const n = items.filter(i => !i.category).length;
+  $('#classifyCount').textContent = n ? `${n} ${n === 1 ? 'item ainda não tem' : 'itens ainda não têm'} categoria.` : 'Todos os itens já têm categoria. ✓';
+}
+$('#btnClassify').addEventListener('click', () => {
+  $('#cStatus').textContent = ''; $('#cText').value = '';
+  refreshClassifyCount();
+  $('#classifyDlg').showModal();
+});
+$('#copyClassifyPrompt').addEventListener('click', async () => {
+  const { text, n } = buildClassifyPrompt();
+  if (!n) { flash($('#cStatus'), 'Todos os itens já têm categoria, nada para classificar.'); return; }
+  const ok = await copyText(text);
+  flash($('#cStatus'), ok ? `Prompt copiado, com ${n} itens sem categoria. Cole na sua IA.` : 'Não foi possível copiar.');
+});
+$('#cApply').addEventListener('click', () => {
+  const lines = $('#cText').value.trim().split(/\r?\n/)
+    .map(l => l.replace(/^\s*(?:[-*•]|\d+[.)])\s*/, '').trim())
+    .filter(Boolean);
+  let applied = 0, unmatched = 0;
+  lines.forEach(l => {
+    const [name, cat] = l.split('|').map(s => (s || '').trim());
+    if (!name || !cat) return;
+    const it = items.find(i => nameKey(i.name) === nameKey(name));
+    if (it) { it.category = canonCategory(cat); applied++; } else unmatched++;
+  });
+  if (!applied) { flash($('#cStatus'), 'Nenhum item da lista bateu com o texto colado.'); return; }
+  save(); render(); refreshClassifyCount();
+  $('#cText').value = '';
+  flash($('#cStatus'), `${applied} ${applied === 1 ? 'item classificado' : 'itens classificados'}${unmatched ? `, ${unmatched} linha${unmatched > 1 ? 's' : ''} não reconhecida${unmatched > 1 ? 's' : ''}` : ''}.`);
 });
 
 /* ---------- backup ---------- */
@@ -913,7 +1050,7 @@ function readImport() {
   } catch (e) { flash($('#dStatus'), 'Esse texto não parece um backup válido.'); return null; }
 }
 function afterImport(msg) {
-  ui.status = 'all'; ui.region = 'all'; ui.fitNext = true;
+  ui.status = 'all'; ui.groupValue = 'all'; ui.fitNext = true;
   items.sort(byNewest);
   save(); render();
   items.filter(i => i.geo === 'pending').forEach(i => queueGeo(i.id));
@@ -948,15 +1085,27 @@ $('#dWipe').addEventListener('click', () => {
 /* ---------- eventos gerais ---------- */
 $('#list').addEventListener('click', e => {
   const b = e.target.closest('[data-act]');
-  if (!b) return;
+  if (!b || b.tagName === 'SELECT') return;
   const li = b.closest('.item');
   const it = li && items.find(x => x.id === li.dataset.id);
   if (it) act(b.dataset.act, it, b);
 });
+$('#list').addEventListener('change', e => {
+  const b = e.target.closest('[data-act="quickcat"]');
+  if (!b) return;
+  const li = b.closest('.item');
+  const it = li && items.find(x => x.id === li.dataset.id);
+  if (it) act('quickcat', it, b);
+});
 $('#chips').addEventListener('click', e => {
   const b = e.target.closest('.chip'); if (!b) return;
-  ui.region = b.dataset.region; ui.fitNext = true; render();
+  ui.groupValue = b.dataset.val; ui.fitNext = true; render();
 });
+$('#groupToggle').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  ui.groupBy = b.dataset.group; ui.groupValue = 'all'; ui.fitNext = true; render();
+});
+$('#sortSelect').addEventListener('change', () => { ui.sort = $('#sortSelect').value; renderList(); });
 $('#seg').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
   ui.status = b.dataset.status; ui.fitNext = true; render();
@@ -971,10 +1120,10 @@ $('#emptyBox').addEventListener('click', e => {
   const k = b.dataset.empty;
   if (k === 'add') openForm(null);
   else if (k === 'batch') { $('#bStatus').textContent = ''; $('#batchDlg').showModal(); }
-  else if (k === 'clear') { ui.status = 'all'; ui.region = 'all'; ui.fitNext = true; render(); }
+  else if (k === 'clear') { ui.status = 'all'; ui.groupValue = 'all'; ui.fitNext = true; render(); }
   else if (k === 'samples') {
     const base = Date.now();
-    SAMPLES.forEach((s, k) => items.push(clean({ name: s[0], address: s[1], region: s[2], lat: s[3], lng: s[4], ts: base + (SAMPLES.length - k) })));
+    SAMPLES.forEach((s, k) => items.push(clean({ name: s[0], address: s[1], region: s[2], lat: s[3], lng: s[4], category: s[5], ts: base + (SAMPLES.length - k) })));
     items.sort(byNewest);
     ui.fitNext = true; save(); render();
   }
@@ -1002,7 +1151,7 @@ items.sort(byNewest);
   $('#lockForm').addEventListener('submit', async e => {
     e.preventDefault();
     const h = await sha256Hex($('#lockInput').value);
-    if (h === CFG.passcodeHash) {
+    if (h === RAW_HASH) {
       try { localStorage.setItem(LOCK_KEY, h); } catch (err) { /* ignora */ }
       boot();
     } else {
