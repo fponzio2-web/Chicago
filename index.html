@@ -118,12 +118,20 @@ h1{font:800 28px/1 var(--display);letter-spacing:.01em;margin:0}
 .tag.cat.unset{background:var(--paper);color:var(--muted);border:1px dashed var(--line)}
 .geo.fail{color:var(--red);font-weight:600}
 .go{width:48px;height:48px;display:grid;place-items:center;color:var(--blue-deep);border-radius:10px}
-.rate-row{grid-column:2/-1;display:flex;align-items:center;gap:0;padding:0 4px 6px}
-.rate-row .lbl{font-size:12.5px;color:var(--muted);margin-right:6px}
-.heart{width:40px;height:40px;border:0;background:none;display:grid;place-items:center;padding:0;border-radius:10px}
-.heart svg{width:24px;height:24px}
-.heart .h{fill:none;stroke:#9DB3C1;stroke-width:1.7;stroke-linejoin:round}
-.heart[aria-pressed="true"] .h{fill:var(--blue-deep);stroke:var(--blue-deep)}
+.rate-row{grid-column:2/-1;display:flex;align-items:center;gap:8px;padding:0 4px 8px;touch-action:none;user-select:none;-webkit-user-select:none}
+.rate-row .lbl{font-size:12.5px;color:var(--muted);white-space:nowrap}
+.rate-row:focus-visible{outline:3px solid var(--blue);outline-offset:3px;border-radius:8px}
+.hearts{display:flex;gap:2px;padding:6px 2px;cursor:pointer}
+.heart-slot{position:relative;width:26px;height:26px;flex:none}
+.heart-slot .h-bg{position:absolute;inset:0;width:26px;height:26px;display:block}
+.heart-slot .h-bg .h{fill:none;stroke:#9DB3C1;stroke-width:1.7;stroke-linejoin:round}
+.heart-slot .h-fill{position:absolute;top:0;left:0;height:26px;overflow:hidden;width:0;display:block}
+.heart-slot .h-fill svg{width:26px;height:26px;display:block}
+.heart-slot .h-fill .h{fill:var(--blue-deep);stroke:var(--blue-deep);stroke-width:1.7;stroke-linejoin:round}
+.tag.dist{background:var(--blue-tint);color:var(--blue-deep)}
+.near-btn{display:inline-flex;align-items:center;gap:5px;flex:0 0 auto !important;padding-left:12px;padding-right:12px}
+.near-btn svg{width:16px;height:16px}
+.near-btn[aria-pressed="true"]{background:var(--blue-deep);border-color:var(--blue-deep);color:#fff}
 .more{grid-column:1/-1;padding:2px 10px 12px;display:grid;gap:8px}
 .more .addr,.more .note{margin:0;font-size:14px;color:var(--muted);overflow-wrap:anywhere}
 .more .row{display:flex;flex-wrap:wrap;gap:8px}
@@ -246,6 +254,7 @@ textarea{min-height:130px;resize:vertical;line-height:1.5}
         <option value="region">Região (A–Z)</option>
         <option value="category">Categoria (A–Z)</option>
         <option value="rating">Nota (maior primeiro)</option>
+        <option value="distance" id="sortDistanceOpt" hidden>Mais perto de mim</option>
       </select>
     </div>
     <div class="chips" id="chips" aria-label="Filtrar" hidden></div>
@@ -256,6 +265,10 @@ textarea{min-height:130px;resize:vertical;line-height:1.5}
       <div class="actions">
         <button class="btn primary" id="btnAdd">+ Adicionar</button>
         <button class="btn" id="btnBatch">Adicionar vários</button>
+        <button class="btn near-btn" id="btnNearMe" type="button" aria-pressed="false" aria-label="Perto de mim">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v8.5a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1V10"/><path d="M10 19.5V14h4v5.5"/></svg>
+          <span id="nearBtnLabel">Perto</span>
+        </button>
       </div>
       <div class="empty" id="emptyBox" hidden></div>
       <ul id="list"></ul>
@@ -442,7 +455,8 @@ const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 const STAR_SVG = `<svg viewBox="0 0 24 24" aria-hidden="true"><polygon class="star" points="${STAR}"/></svg>`;
-const HEART_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path class="h" d="M12 21s-7-4.35-9.33-8.5C.9 9.3 2.6 5.5 6.2 5.5c2.1 0 3.6 1.2 5.8 3.5 2.2-2.3 3.7-3.5 5.8-3.5 3.6 0 5.3 3.8 3.53 7C19 16.65 12 21 12 21z"/></svg>';
+const HEART_PATH = 'M12 21s-7-4.35-9.33-8.5C.9 9.3 2.6 5.5 6.2 5.5c2.1 0 3.6 1.2 5.8 3.5 2.2-2.3 3.7-3.5 5.8-3.5 3.6 0 5.3 3.8 3.53 7C19 16.65 12 21 12 21z';
+const heartSvg = cls => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true"><path class="h" d="${HEART_PATH}"/></svg>`;
 const PIN_SVG = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>';
 
 let items = [];
@@ -465,7 +479,7 @@ function clean(o) {
     lng: hasGeo ? +o.lng : undefined,
     geo: hasGeo ? 'ok' : (o.geo === 'fail' ? 'fail' : 'pending'),
     manual: !!o.manual,
-    rating: Math.max(0, Math.min(5, Math.round(+o.rating || 0))),
+    rating: Math.max(0, Math.min(5, Math.round((+o.rating || 0) * 2) / 2)),
     ts: Number.isFinite(+o.ts) && o.ts != null ? +o.ts : Date.now()
   };
 }
@@ -520,12 +534,21 @@ function categoryList() {
   });
   return [...m.values()].sort((a, b) => a.name.localeCompare(b.name, 'pt'));
 }
+let userCoords = null;
+function haversineKm(lat1, lng1, lat2, lng2) {
+  const R = 6371, toRad = d => d * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1), dLng = toRad(lng2 - lng1);
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+const distKm = i => (userCoords && hasGeo(i)) ? haversineKm(userCoords.lat, userCoords.lng, i.lat, i.lng) : Infinity;
 const SORTS = {
   recent: (a, b) => b.ts - a.ts,
   name: (a, b) => a.name.localeCompare(b.name, 'pt'),
   region: (a, b) => regionOf(a).localeCompare(regionOf(b), 'pt') || a.name.localeCompare(b.name, 'pt'),
   category: (a, b) => categoryOf(a).localeCompare(categoryOf(b), 'pt') || a.name.localeCompare(b.name, 'pt'),
-  rating: (a, b) => (b.rating || 0) - (a.rating || 0) || a.name.localeCompare(b.name, 'pt')
+  rating: (a, b) => (b.rating || 0) - (a.rating || 0) || a.name.localeCompare(b.name, 'pt'),
+  distance: (a, b) => distKm(a) - distKm(b)
 };
 function visible() {
   const getter = ui.groupBy === 'category' ? categoryOf : regionOf;
@@ -838,9 +861,64 @@ function moreHTML(i) {
     </div></div>`;
 }
 function rateRow(i) {
+  const val = i.rating || 0;
   let hs = '';
-  for (let n = 1; n <= 5; n++) hs += `<button class="heart" data-act="rate" data-rate="${n}" aria-pressed="${n <= i.rating}" aria-label="Nota ${n} de 5 para ${esc(i.name)}">${HEART_SVG}</button>`;
-  return `<div class="rate-row" role="group" aria-label="Nota"><span class="lbl">${i.rating ? 'Sua nota' : 'Dê uma nota'}</span>${hs}</div>`;
+  for (let n = 0; n < 5; n++) {
+    const frac = Math.max(0, Math.min(1, val - n)) * 100;
+    hs += `<span class="heart-slot">${heartSvg('h-bg')}<span class="h-fill" style="width:${frac}%">${heartSvg('')}</span></span>`;
+  }
+  const label = val ? `Sua nota: ${String(val).replace(/\.0$/, '')}` : 'Dê uma nota';
+  return `<div class="rate-row">
+    <span class="lbl">${label}</span>
+    <div class="hearts" data-id="${esc(i.id)}" role="slider" tabindex="0" aria-label="Nota para ${esc(i.name)}" aria-valuemin="0" aria-valuemax="5" aria-valuenow="${val}" aria-valuetext="${val ? val + ' de 5' : 'sem nota'}">${hs}</div>
+  </div>`;
+}
+function ratingFromPointer(container, clientX) {
+  const rect = container.getBoundingClientRect();
+  const w = rect.width || 1;
+  const x = Math.max(0, Math.min(w, clientX - rect.left));
+  return Math.round((x / w) * 10) / 2;
+}
+function paintRating(container, val) {
+  container.setAttribute('aria-valuenow', val);
+  container.setAttribute('aria-valuetext', val ? val + ' de 5' : 'sem nota');
+  container.querySelectorAll('.heart-slot').forEach((slot, idx) => {
+    const frac = Math.max(0, Math.min(1, val - idx)) * 100;
+    slot.querySelector('.h-fill').style.width = frac + '%';
+  });
+  const lbl = container.parentElement.querySelector('.lbl');
+  if (lbl) lbl.textContent = val ? `Sua nota: ${String(val).replace(/\.0$/, '')}` : 'Dê uma nota';
+}
+function bindRating(container) {
+  const id = container.dataset.id;
+  const commit = val => {
+    const it = items.find(x => x.id === id); if (!it) return;
+    it.rating = val; save(); renderList();
+  };
+  const onMove = e => paintRating(container, ratingFromPointer(container, e.clientX));
+  const onUp = e => {
+    container.removeEventListener('pointermove', onMove);
+    container.removeEventListener('pointerup', onUp);
+    container.removeEventListener('pointercancel', onUp);
+    commit(ratingFromPointer(container, e.clientX));
+  };
+  container.addEventListener('pointerdown', e => {
+    e.preventDefault();
+    container.setPointerCapture && container.setPointerCapture(e.pointerId);
+    paintRating(container, ratingFromPointer(container, e.clientX));
+    container.addEventListener('pointermove', onMove);
+    container.addEventListener('pointerup', onUp);
+    container.addEventListener('pointercancel', onUp);
+  });
+  container.addEventListener('keydown', e => {
+    const it = items.find(x => x.id === id); if (!it) return;
+    let val = it.rating || 0;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowUp') val = Math.min(5, val + 0.5);
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') val = Math.max(0, val - 0.5);
+    else return;
+    e.preventDefault();
+    commit(val);
+  });
 }
 function itemHTML(i) {
   const open = ui.openId === i.id;
@@ -849,7 +927,7 @@ function itemHTML(i) {
     <button class="check" role="checkbox" aria-checked="${i.done}" aria-label="Marcar ${esc(i.name)} como feito" data-act="toggle">${STAR_SVG}</button>
     <button class="body" data-act="open" aria-expanded="${open}">
       <span class="name">${esc(i.name)}</span>
-      <span class="meta"><span class="tag">${esc(regionOf(i))}</span><span class="${catTagClass(i)}">${esc(categoryOf(i))}</span>${geoTxt ? `<span class="geo ${i.geo}">${geoTxt}</span>` : ''}</span>
+      <span class="meta"><span class="tag">${esc(regionOf(i))}</span><span class="${catTagClass(i)}">${esc(categoryOf(i))}</span>${(userCoords && hasGeo(i)) ? `<span class="tag dist">${distKm(i).toFixed(1)} km</span>` : ''}${geoTxt ? `<span class="geo ${i.geo}">${geoTxt}</span>` : ''}</span>
     </button>
     <a class="go" href="${mapsUrl(i)}" target="_blank" rel="noopener" aria-label="Abrir ${esc(i.name)} no Google Maps">${PIN_SVG}</a>
     ${i.done ? rateRow(i) : ''}
@@ -858,8 +936,16 @@ function itemHTML(i) {
 }
 function renderList() {
   const cmp = SORTS[ui.sort] || SORTS.recent;
-  const vis = visible().slice().sort((a, b) => (a.done - b.done) || cmp(a, b));
+  const vis = visible().slice().sort((a, b) => {
+    if (a.done !== b.done) return a.done - b.done;
+    if (a.done && b.done) {
+      const au = a.rating ? 1 : 0, bu = b.rating ? 1 : 0;
+      if (au !== bu) return au - bu;
+    }
+    return cmp(a, b);
+  });
   $('#list').innerHTML = vis.map(itemHTML).join('');
+  $('#list').querySelectorAll('.hearts').forEach(bindRating);
   const box = $('#emptyBox');
   if (!items.length) {
     box.hidden = false;
@@ -893,7 +979,6 @@ function removeItem(it) {
 }
 function act(name, it, btn) {
   switch (name) {
-    case 'rate': { const n = +btn.dataset.rate; it.rating = it.rating === n ? 0 : n; save(); renderList(); break; }
     case 'quickcat': it.category = btn.value; save(); renderList(); break;
     case 'toggle': it.done = !it.done; save(); render(); break;
     case 'open': ui.openId = ui.openId === it.id ? null : it.id; renderList(); break;
@@ -1143,6 +1228,35 @@ $('#groupToggle').addEventListener('click', e => {
   ui.groupBy = b.dataset.group; ui.groupValue = 'all'; ui.fitNext = true; render();
 });
 $('#sortSelect').addEventListener('change', () => { ui.sort = $('#sortSelect').value; renderList(); });
+$('#btnNearMe').addEventListener('click', () => {
+  const btn = $('#btnNearMe'), lbl = $('#nearBtnLabel'), opt = $('#sortDistanceOpt');
+  if (userCoords) {
+    userCoords = null;
+    opt.hidden = true;
+    btn.setAttribute('aria-pressed', 'false'); lbl.textContent = 'Perto';
+    if (ui.sort === 'distance') { ui.sort = 'recent'; $('#sortSelect').value = 'recent'; }
+    renderList();
+    toast('Localização não é mais usada.');
+    return;
+  }
+  if (!navigator.geolocation) { toast('Seu navegador não permite usar localização.'); return; }
+  btn.disabled = true; lbl.textContent = 'Localizando…';
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      userCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      opt.hidden = false;
+      ui.sort = 'distance'; $('#sortSelect').value = 'distance';
+      btn.disabled = false; btn.setAttribute('aria-pressed', 'true'); lbl.textContent = 'Perto ✓';
+      renderList();
+      toast('Pronto. Mostrando o que está mais perto de você.');
+    },
+    err => {
+      btn.disabled = false; lbl.textContent = 'Perto';
+      toast(err && err.code === 1 ? 'Você precisa permitir o acesso à localização.' : 'Não foi possível obter sua localização.');
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+  );
+});
 $('#seg').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
   ui.status = b.dataset.status; ui.fitNext = true; render();
