@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Chicago – checklist</title>
+<meta name="theme-color" content="#41B6E6">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Chicago">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpolygon fill='%23D8232A' points='12,2 14.89,7 20.66,7 17.77,12 20.66,17 14.89,17 12,22 9.11,17 3.34,17 6.23,12 3.34,7 9.11,7'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=Public+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<noscript>Este app precisa de JavaScript.</noscript>
+
+<div id="lockScreen" hidden>
+  <form class="card" id="lockForm" autocomplete="off">
+    <div class="stripe" aria-hidden="true"></div>
+    <h1>Chicago</h1>
+    <p>Lista privada. Peça a senha para quem te convidou.</p>
+    <label><span>Senha</span><input id="lockInput" type="password" required autocomplete="current-password" inputmode="text"></label>
+    <p class="err" id="lockErr" role="alert" hidden>Senha incorreta.</p>
+    <button class="btn primary" type="submit">Entrar</button>
+  </form>
+</div>
+
+<div class="app" id="app" data-view="list" hidden>
+
+  <header class="top">
+    <div class="top-row">
+      <div class="brand">
+        <h1>Chicago</h1>
+        <span class="sub" id="progressText">Lista vazia</span>
+      </div>
+      <div class="tools">
+        <span class="sync" id="syncState"></span>
+        <span class="dot" id="syncDot" data-s="local" role="img" aria-label="Só neste aparelho" title="Só neste aparelho"></span>
+        <button class="icon-btn" id="btnData" aria-label="Mais opções">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+          <span class="dot-badge" id="dataDot" hidden></span>
+        </button>
+      </div>
+    </div>
+    <div class="stripes" aria-hidden="true"></div>
+    <div class="syncbar" id="syncBar" role="status" hidden></div>
+  </header>
+
+  <section class="filters" aria-label="Filtros">
+    <div class="seg" id="seg">
+      <button data-status="all" aria-pressed="true">Todos</button>
+      <button data-status="todo" aria-pressed="false">Faltam</button>
+      <button data-status="done" aria-pressed="false">Feitos</button>
+    </div>
+    <div class="group-toggle" id="groupToggle" role="group" aria-label="Agrupar por">
+      <button data-group="region" aria-pressed="true">Região</button>
+      <button data-group="category" aria-pressed="false">Categoria</button>
+    </div>
+    <div class="sort-row">
+      <label for="sortSelect">Ordenar</label>
+      <select class="sort-select" id="sortSelect" aria-label="Ordenar">
+        <option value="recent">Mais recentes</option>
+        <option value="name">Nome (A–Z)</option>
+        <option value="region">Região (A–Z)</option>
+        <option value="category">Categoria (A–Z)</option>
+        <option value="rating">Nota (maior primeiro)</option>
+        <option value="distance" id="sortDistanceOpt" hidden>Mais perto de mim</option>
+      </select>
+    </div>
+    <div class="chips" id="chips" aria-label="Filtrar" hidden></div>
+  </section>
+
+  <main class="panes">
+    <section class="pane list-pane" id="listPane" aria-label="Lista">
+      <div class="actions">
+        <button class="btn primary" id="btnAdd">+ Adicionar</button>
+        <button class="btn" id="btnBatch">Adicionar vários</button>
+        <button class="btn near-btn" id="btnNearMe" type="button" aria-pressed="false" aria-label="Perto de mim">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v8.5a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1V10"/><path d="M10 19.5V14h4v5.5"/></svg>
+          <span id="nearBtnLabel">Perto</span>
+        </button>
+      </div>
+      <div class="empty" id="emptyBox" hidden></div>
+      <ul id="list"></ul>
+    </section>
+    <section class="pane map-pane" id="mapPane" aria-label="Mapa">
+      <div id="map"></div>
+      <div class="placing" id="placing" hidden>
+        <span id="placingText"></span>
+        <button class="btn small" id="placingCancel">Cancelar</button>
+      </div>
+    </section>
+  </main>
+
+  <nav class="tabs" role="tablist" aria-label="Visão">
+    <button role="tab" data-view="list" aria-selected="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1" fill="currentColor"/><circle cx="4" cy="12" r="1" fill="currentColor"/><circle cx="4" cy="18" r="1" fill="currentColor"/></svg>
+      <span>Lista</span>
+    </button>
+    <button role="tab" data-view="map" aria-selected="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
+      <span>Mapa</span>
+    </button>
+  </nav>
+</div>
+
+<!-- Adicionar / editar -->
+<dialog id="formDlg" aria-labelledby="formTitle">
+  <form class="sheet" id="form" autocomplete="off">
+    <h2 id="formTitle">Novo lugar</h2>
+    <label><span>Nome</span><input id="fName" required placeholder="Ex.: Cloud Gate"></label>
+    <label><span>Endereço <small class="hint">Opcional. Ajuda a achar o ponto certo.</small></span><input id="fAddr" placeholder="201 E Randolph St"></label>
+    <label><span>Região <small class="hint">Opcional. Usada no filtro.</small></span><input id="fRegion" list="regionSuggest" placeholder="Loop"></label>
+    <label><span>Categoria <small class="hint">Opcional.</small></span><select id="fCategory"></select></label>
+    <label><span>Descrição <small class="hint">Opcional. O que fazer ou ver lá.</small></span><textarea id="fDesc" rows="2" placeholder="Ex.: veja obras impressionistas e uma das maiores coleções de arte dos EUA"></textarea></label>
+    <label><span>Nota <small class="hint">Opcional.</small></span><input id="fNote" placeholder="Ex.: ir de manhã"></label>
+    <p class="err" id="formErr" role="alert" hidden></p>
+    <div class="row-end">
+      <button type="button" class="btn" data-close>Cancelar</button>
+      <button type="submit" class="btn primary" id="formSubmit">Adicionar</button>
+    </div>
+  </form>
+  <datalist id="regionSuggest"></datalist>
+</dialog>
+
+<!-- Adicionar vários -->
+<dialog id="batchDlg" aria-labelledby="batchTitle">
+  <div class="sheet">
+    <h2 id="batchTitle">Adicionar vários</h2>
+    <label><span>Um item por linha <small class="hint">Formato: Nome | Endereço | Região | Categoria | Descrição. Só o nome é obrigatório.</small></span>
+      <textarea id="bText" placeholder="Cloud Gate | 201 E Randolph St | Loop | Atração | Escultura pública reluzente, ótima para fotos&#10;Wrigley Field | 1060 W Addison St | Lakeview | Evento | Veja um jogo do Cubs no estádio histórico&#10;Chicago Riverwalk"></textarea>
+    </label>
+    <p class="hint" id="bCount">Cole ou escreva a lista acima.</p>
+    <div class="box">
+      <strong>Gerar a lista com uma IA</strong>
+      <div class="two">
+        <label><span>Tema</span><input id="aiTheme" placeholder="Ex.: pizzarias, museus"></label>
+        <label><span>Qtde</span><input id="aiQty" type="number" min="1" max="50" value="10" inputmode="numeric"></label>
+      </div>
+      <button class="btn small" id="copyPrompt" type="button">Copiar prompt para a IA</button>
+      <p class="hint">O prompt já leva a sua lista (para a IA não repetir), as notas que você deu e pede a categoria de cada item. Cole no ChatGPT, Claude ou outro e traga a resposta para a caixa acima.</p>
+    </div>
+    <p class="status" id="bStatus" aria-live="polite"></p>
+    <div class="row-end">
+      <button type="button" class="btn" data-close>Cancelar</button>
+      <button type="button" class="btn primary" id="bAdd">Adicionar à lista</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- Mais opções -->
+<dialog id="moreDlg" aria-labelledby="moreTitle">
+  <div class="sheet">
+    <h2 id="moreTitle">Mais opções</h2>
+    <div class="menu-list">
+      <button class="menu-item" id="menuClassify" type="button">
+        <span>Classificar itens</span>
+        <span class="count-badge" id="classifyBadge" hidden>0</span>
+      </button>
+      <button class="menu-item" id="menuData" type="button">
+        <span>Backup e dados</span>
+      </button>
+    </div>
+  </div>
+</dialog>
+
+<!-- Classificar existentes -->
+<dialog id="classifyDlg" aria-labelledby="classifyTitle">
+  <div class="sheet">
+    <h2 id="classifyTitle">Classificar itens</h2>
+    <p class="hint">Gere um prompt pedindo a categoria de cada item sem categoria, cole a resposta da IA abaixo e aplique de uma vez.</p>
+    <button class="btn" id="copyClassifyPrompt" type="button">Copiar prompt para a IA</button>
+    <p class="hint" id="classifyCount"></p>
+    <label><span>Resposta da IA <small class="hint">Formato: Nome | Categoria</small></span>
+      <textarea id="cText" placeholder="Cloud Gate (The Bean) | Atração&#10;Gibsons Bar &amp; Steakhouse | Restaurante"></textarea>
+    </label>
+    <p class="status" id="cStatus" aria-live="polite"></p>
+    <div class="row-end">
+      <button type="button" class="btn" data-close>Cancelar</button>
+      <button type="button" class="btn primary" id="cApply">Aplicar categorias</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- Dados -->
+<dialog id="dataDlg" aria-labelledby="dataTitle">
+  <div class="sheet">
+    <h2 id="dataTitle">Backup e dados</h2>
+    <p class="hint" id="dataHint"></p>
+    <h3>Backup manual</h3>
+    <textarea id="dExport" readonly rows="3" aria-label="Backup"></textarea>
+    <button class="btn" id="dCopy" type="button">Copiar backup</button>
+    <h3>Restaurar backup</h3>
+    <textarea id="dImport" rows="3" placeholder="Cole o backup aqui" aria-label="Colar backup"></textarea>
+    <div class="row-end">
+      <button class="btn" id="dMerge" type="button">Mesclar com a lista</button>
+      <button class="btn" id="dReplace" type="button">Substituir tudo</button>
+    </div>
+    <p class="status" id="dStatus" aria-live="polite"></p>
+    <button class="btn danger" id="dWipe" type="button">Apagar tudo</button>
+    <button class="btn" type="button" data-close>Fechar</button>
+  </div>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden>
+  <span></span><button type="button">Desfazer</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script src="js/core.js"></script>
+<script src="js/data.js"></script>
+<script src="js/cloud.js"></script>
+<script src="js/map.js"></script>
+<script src="js/render.js"></script>
+<script src="js/actions.js"></script>
+<script src="js/events.js"></script>
+</body>
+</html>
