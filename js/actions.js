@@ -124,7 +124,7 @@ function buildPrompt() {
     if (nope.length) p += `Não gostei (1 a 2): ${list(nope)}\n`;
     p += 'Use isso para entender meu gosto: sugira coisas parecidas com as que gostei e evite o estilo das que não gostei.\n';
   }
-  p += `\nResponda só com uma linha por item, neste formato exato:\nNome do lugar | Endereço completo, Chicago, IL | Bairro | Categoria | Descrição\nA categoria deve ser uma destas, exatamente como está escrita: ${CATEGORIES.join(', ')}.\nA descrição deve ter uma frase curta (até 20 palavras) dizendo o que dá para fazer ou ver ali.\nSem numeração, sem títulos e sem texto extra. Use apenas lugares reais e endereços que você tenha certeza que existem.`;
+  p += `\nResponda só com uma linha por item, neste formato exato:\nNome do lugar | Endereço completo, Chicago, IL | Bairro | Categoria | Descrição\nA categoria deve ser uma destas, exatamente como está escrita: ${CATEGORIES.join(', ')}.\nA descrição deve ter de 1 a 2 frases curtas (até 35 palavras) contando um pouco sobre o lugar: o que dá para fazer ou ver ali. Se a categoria for Museu ou for um Evento pago, inclua também o preço aproximado da entrada e, se existir, em quais dias a entrada é gratuita. Se a entrada já for gratuita, diga isso em vez de preço.\nSem numeração, sem títulos e sem texto extra. Use apenas lugares reais e endereços que você tenha certeza que existem.`;
   return { text: p, total: items.length, rated: rated.length };
 }
 $('#copyPrompt').addEventListener('click', async () => {
