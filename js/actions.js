@@ -7,7 +7,7 @@ function removeItem(it) {
   items.splice(idx, 1);
   if (ui.openId === it.id) ui.openId = null;
   save(); render();
-  toast('Item excluído', () => { items.splice(Math.min(idx, items.length), 0, it); save(); render(); });
+  toast(tr('itemDeleted'), () => { items.splice(Math.min(idx, items.length), 0, it); save(); render(); });
 }
 function act(name, it, btn) {
   switch (name) {
@@ -17,7 +17,7 @@ function act(name, it, btn) {
       const show = p.hidden;
       p.hidden = !show;
       btn.setAttribute('aria-expanded', String(show));
-      btn.textContent = show ? 'Ocultar descrição' : 'Ver descrição';
+      btn.textContent = show ? tr('hideDescription') : tr('viewDescription');
       break;
     }
     case 'toggle': it.done = !it.done; save(); render(); break;
@@ -40,8 +40,8 @@ function act(name, it, btn) {
 /* ---------- formulário (um item) ---------- */
 function openForm(it) {
   ui.editingId = it ? it.id : null;
-  $('#formTitle').textContent = it ? 'Editar lugar' : 'Novo lugar';
-  $('#formSubmit').textContent = it ? 'Salvar' : 'Adicionar';
+  $('#formTitle').textContent = it ? tr('formTitleEdit') : tr('formTitleNew');
+  $('#formSubmit').textContent = it ? tr('formSubmitSave') : tr('formSubmitAdd');
   $('#fName').value = it ? it.name : '';
   $('#fAddr').value = it ? it.address : '';
   $('#fRegion').value = it ? it.region : '';
@@ -60,7 +60,7 @@ $('#form').addEventListener('submit', e => {
   const err = $('#formErr');
   if (!name) return;
   const dup = items.find(i => nameKey(i.name) === nameKey(name) && i.id !== ui.editingId);
-  if (dup) { err.textContent = 'Já existe um item com esse nome.'; err.hidden = false; return; }
+  if (dup) { err.textContent = tr('duplicateNameErr'); err.hidden = false; return; }
   if (ui.editingId) {
     const it = items.find(x => x.id === ui.editingId);
     if (it) {
@@ -107,7 +107,7 @@ function parseBatch(text) {
 }
 $('#bText').addEventListener('input', () => {
   const n = parseBatch($('#bText').value).length;
-  $('#bCount').textContent = n ? `${n} ${n === 1 ? 'item reconhecido' : 'itens reconhecidos'}.` : 'Cole ou escreva a lista acima.';
+  $('#bCount').textContent = n ? `${n} ${n === 1 ? tr('itemRecognizedS') : tr('itemRecognizedP')}.` : tr('batchCountEmpty');
 });
 function buildPrompt() {
   const n = Math.max(1, Math.min(50, +$('#aiQty').value || 10));
@@ -130,11 +130,11 @@ function buildPrompt() {
 $('#copyPrompt').addEventListener('click', async () => {
   const { text, total, rated } = buildPrompt();
   const ok = await copyText(text);
-  flash($('#bStatus'), ok ? `Prompt copiado, com ${total} itens da lista e ${rated} notas. Cole na sua IA.` : 'Não foi possível copiar.');
+  flash($('#bStatus'), ok ? tr('promptCopied', { total, rated }) : tr('cantCopy'));
 });
 $('#bAdd').addEventListener('click', () => {
   const parsed = parseBatch($('#bText').value);
-  if (!parsed.length) { flash($('#bStatus'), 'Nenhum item reconhecido.'); return; }
+  if (!parsed.length) { flash($('#bStatus'), tr('noItemsRecognized')); return; }
   const seen = new Set(items.map(i => nameKey(i.name)));
   const fresh = []; let dups = 0;
   parsed.forEach(o => {
@@ -143,7 +143,7 @@ $('#bAdd').addEventListener('click', () => {
     seen.add(k);
     fresh.push(clean({ name: o.name, address: o.address, region: canonRegion(o.region), category: canonCategory(o.category), description: o.description, ts: 0 }));
   });
-  if (!fresh.length) { flash($('#bStatus'), 'Todos esses itens já estão na lista.'); return; }
+  if (!fresh.length) { flash($('#bStatus'), tr('allAlreadyInList')); return; }
   const base = Date.now();
   fresh.forEach((f, k) => { f.ts = base + (fresh.length - k); });
   items.unshift(...fresh);
@@ -151,8 +151,8 @@ $('#bAdd').addEventListener('click', () => {
   save(); render();
   fresh.forEach(i => queueGeo(i.id));
   $('#batchDlg').close();
-  $('#bText').value = ''; $('#bCount').textContent = 'Cole ou escreva a lista acima.';
-  toast(`${fresh.length} ${fresh.length === 1 ? 'item adicionado' : 'itens adicionados'}${dups ? `, ${dups} repetido${dups > 1 ? 's' : ''} ignorado${dups > 1 ? 's' : ''}` : ''}.`);
+  $('#bText').value = ''; $('#bCount').textContent = tr('batchCountEmpty');
+  toast(`${fresh.length} ${fresh.length === 1 ? tr('itemAddedS') : tr('itemAddedP')}${dups ? `, ${dups} ${dups > 1 ? tr('dupIgnoredP') : tr('dupIgnoredS')}` : ''}.`);
 });
 
 /* ---------- classificar existentes ---------- */
@@ -163,7 +163,7 @@ function buildClassifyPrompt() {
 }
 function refreshClassifyCount() {
   const n = items.filter(i => !i.category).length;
-  $('#classifyCount').textContent = n ? `${n} ${n === 1 ? 'item ainda não tem' : 'itens ainda não têm'} categoria.` : 'Todos os itens já têm categoria. ✓';
+  $('#classifyCount').textContent = n ? `${n} ${n === 1 ? tr('classifyPendingS') : tr('classifyPendingP')}` : tr('classifyNoneLeft');
 }
 function openClassify() {
   $('#cStatus').textContent = ''; $('#cText').value = '';
@@ -172,9 +172,9 @@ function openClassify() {
 }
 $('#copyClassifyPrompt').addEventListener('click', async () => {
   const { text, n } = buildClassifyPrompt();
-  if (!n) { flash($('#cStatus'), 'Todos os itens já têm categoria, nada para classificar.'); return; }
+  if (!n) { flash($('#cStatus'), tr('classifyAllDone')); return; }
   const ok = await copyText(text);
-  flash($('#cStatus'), ok ? `Prompt copiado, com ${n} itens sem categoria. Cole na sua IA.` : 'Não foi possível copiar.');
+  flash($('#cStatus'), ok ? tr('classifyPromptCopied', { n }) : tr('cantCopy'));
 });
 $('#cApply').addEventListener('click', () => {
   const lines = $('#cText').value.trim().split(/\r?\n/)
@@ -187,32 +187,30 @@ $('#cApply').addEventListener('click', () => {
     const it = items.find(i => nameKey(i.name) === nameKey(name));
     if (it) { it.category = canonCategory(cat); applied++; } else unmatched++;
   });
-  if (!applied) { flash($('#cStatus'), 'Nenhum item da lista bateu com o texto colado.'); return; }
+  if (!applied) { flash($('#cStatus'), tr('classifyNoMatch')); return; }
   save(); render(); refreshClassifyCount();
   $('#cText').value = '';
-  flash($('#cStatus'), `${applied} ${applied === 1 ? 'item classificado' : 'itens classificados'}${unmatched ? `, ${unmatched} linha${unmatched > 1 ? 's' : ''} não reconhecida${unmatched > 1 ? 's' : ''}` : ''}.`);
+  flash($('#cStatus'), `${applied} ${applied === 1 ? tr('itemClassifiedS') : tr('itemClassifiedP')}${unmatched ? `, ${unmatched} ${unmatched > 1 ? tr('lineNotRecognizedP') : tr('lineNotRecognizedS')}` : ''}.`);
 });
 
 /* ---------- backup ---------- */
 const exportJSON = () => JSON.stringify({ app: 'chicago-checklist', v: 1, items });
 function openData() {
-  $('#dataHint').textContent = CLOUD
-    ? 'A lista fica na nuvem e aparece em todos os aparelhos. O backup abaixo é só uma cópia de segurança.'
-    : 'Sem nuvem configurada: os dados ficam só neste aparelho. Use o backup para levar a lista para outro.';
+  $('#dataHint').textContent = CLOUD ? tr('cloudHint') : tr('localHint');
   $('#dExport').value = exportJSON();
   $('#dImport').value = ''; $('#dStatus').textContent = '';
   $('#dataDlg').showModal();
 }
 function readImport() {
   const txt = $('#dImport').value.trim();
-  if (!txt) { flash($('#dStatus'), 'Cole o backup na caixa acima.'); return null; }
+  if (!txt) { flash($('#dStatus'), tr('pasteBackupFirst')); return null; }
   try {
     const d = JSON.parse(txt);
     const arr = Array.isArray(d) ? d : d.items;
     const list = (arr || []).map(clean).filter(Boolean);
     if (!list.length) throw new Error('vazio');
     return list;
-  } catch (e) { flash($('#dStatus'), 'Esse texto não parece um backup válido.'); return null; }
+  } catch (e) { flash($('#dStatus'), tr('invalidBackup')); return null; }
 }
 function afterImport(msg) {
   ui.status = 'all'; ui.groupValue = 'all'; ui.fitNext = true;
@@ -223,7 +221,7 @@ function afterImport(msg) {
 }
 $('#dCopy').addEventListener('click', async () => {
   $('#dExport').value = exportJSON();
-  flash($('#dStatus'), (await copyText($('#dExport').value)) ? 'Backup copiado.' : 'Selecione o texto acima e copie.');
+  flash($('#dStatus'), (await copyText($('#dExport').value)) ? tr('backupCopied') : tr('selectAndCopy'));
 });
 $('#dMerge').addEventListener('click', () => {
   const list = readImport(); if (!list) return;
@@ -233,17 +231,17 @@ $('#dMerge').addEventListener('click', () => {
     if (ex) { ex.done = ex.done || n.done; }
     else { if (items.some(i => i.id === n.id)) n.id = uid(); items.push(n); added++; }
   });
-  afterImport(`${added} novo${added === 1 ? '' : 's'} item${added === 1 ? '' : 's'} adicionado${added === 1 ? '' : 's'}.`);
+  afterImport(`${added} ${added === 1 ? tr('newItemAddedS') : tr('newItemAddedP')}.`);
 });
 $('#dReplace').addEventListener('click', () => {
   const list = readImport(); if (!list) return;
-  if (!confirm('Substituir toda a lista pelo backup?' + (CLOUD ? ' Isso vale para todos os aparelhos.' : ''))) return;
+  if (!confirm(tr('confirmReplace') + (CLOUD ? tr('confirmReplaceCloud') : ''))) return;
   items = list; ui.openId = null;
-  afterImport('Lista substituída.');
+  afterImport(tr('listReplaced'));
 });
 $('#dWipe').addEventListener('click', () => {
-  if (!confirm('Apagar todos os itens?' + (CLOUD ? ' Isso vale para todos os aparelhos.' : '') + ' Não dá para desfazer.')) return;
+  if (!confirm(tr('confirmWipe') + (CLOUD ? tr('confirmReplaceCloud') : '') + tr('confirmWipeCantUndo'))) return;
   items = []; ui.openId = null; save(); render();
-  $('#dataDlg').close(); toast('Lista apagada.');
+  $('#dataDlg').close(); toast(tr('listWiped'));
 });
 
