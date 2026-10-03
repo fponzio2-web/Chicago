@@ -3,26 +3,27 @@
 /* ---------- nuvem (Supabase) ---------- */
 let sb = null, syncChain = Promise.resolve();
 const remote = new Map();
-const SYNC_TEXT = { local: 'Só neste aparelho', loading: 'Conectando à nuvem…', saving: 'Salvando…', ok: 'Nuvem sincronizada', error: 'Sem conexão com a nuvem', nolib: 'Não foi possível carregar a nuvem' };
+const SYNC_KEYS = { local: 'syncLocal', loading: 'syncLoading', saving: 'syncSaving', ok: 'syncOk', error: 'syncError', nolib: 'syncNolib' };
 function setSync(s, detail) {
-  const label = (SYNC_TEXT[s] || '') + (detail ? ': ' + detail : '');
+  const text = SYNC_KEYS[s] ? tr(SYNC_KEYS[s]) : '';
+  const label = text + (detail ? ': ' + detail : '');
   const dot = $('#syncDot');
   dot.dataset.s = s === 'saving' || s === 'loading' ? 'busy' : s;
   dot.setAttribute('aria-label', label); dot.title = label;
-  $('#syncState').textContent = SYNC_TEXT[s] || '';
+  $('#syncState').textContent = text;
   const bar = $('#syncBar'), bad = s === 'error' || s === 'nolib';
   bar.hidden = !bad; bar.textContent = bad ? label : '';
 }
 function describeErr(e) {
   const m = String((e && (e.message || e.details)) || e || ''), c = e && e.code;
-  if (/rating/i.test(m)) return 'falta a coluna da nota (rode o SQL novo no Supabase)';
-  if (/category/i.test(m)) return 'falta a coluna da categoria (rode o SQL novo no Supabase)';
-  if (/description/i.test(m)) return 'falta a coluna da descrição (rode o SQL novo no Supabase)';
-  if (c === 'PGRST205' || c === '42P01' || /does not exist|schema cache/i.test(m)) return 'tabela não encontrada (rode o SQL no Supabase)';
-  if (c === '42501' || /row-level security|permission denied/i.test(m)) return 'sem permissão (rode o SQL da política)';
-  if (c === 'PGRST301' || /invalid api key|jwt|apikey/i.test(m)) return 'chave inválida (confira o config.js)';
-  if (/failed to fetch|network|load failed/i.test(m)) return 'URL errada ou sem internet (confira o config.js)';
-  return m.slice(0, 90) || 'erro desconhecido';
+  if (/rating/i.test(m)) return tr('errMissingRating');
+  if (/category/i.test(m)) return tr('errMissingCategory');
+  if (/description/i.test(m)) return tr('errMissingDescription');
+  if (c === 'PGRST205' || c === '42P01' || /does not exist|schema cache/i.test(m)) return tr('errNoTable');
+  if (c === '42501' || /row-level security|permission denied/i.test(m)) return tr('errNoPermission');
+  if (c === 'PGRST301' || /invalid api key|jwt|apikey/i.test(m)) return tr('errBadKey');
+  if (/failed to fetch|network|load failed/i.test(m)) return tr('errBadUrl');
+  return m.slice(0, 90) || tr('errUnknown');
 }
 const rowOf = i => ({ id: i.id, name: i.name, address: i.address, region: i.region, category: i.category, description: i.description, note: i.note, done: i.done, rating: i.rating,
   lat: hasGeo(i) ? i.lat : null, lng: hasGeo(i) ? i.lng : null, geo: i.geo, manual: i.manual, ts: i.ts });
@@ -54,7 +55,7 @@ async function doSync() {
     setSync('ok');
   } catch (e) {
     setSync('error', describeErr(e));
-    toast('Não deu para salvar na nuvem. Veja o aviso vermelho abaixo do título.');
+    toast(tr('cantSaveCloud'));
   }
 }
 function pushChanges() { syncChain = syncChain.then(doSync); return syncChain; }
