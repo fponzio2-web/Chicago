@@ -29,26 +29,26 @@ $('#btnNearMe').addEventListener('click', () => {
   if (userCoords) {
     userCoords = null;
     opt.hidden = true;
-    btn.setAttribute('aria-pressed', 'false'); lbl.textContent = 'Perto';
+    btn.setAttribute('aria-pressed', 'false'); lbl.textContent = tr('nearLabel');
     if (ui.sort === 'distance') { ui.sort = 'recent'; $('#sortSelect').value = 'recent'; }
     renderList();
-    toast('Localização não é mais usada.');
+    toast(tr('nearMeOff'));
     return;
   }
-  if (!navigator.geolocation) { toast('Seu navegador não permite usar localização.'); return; }
-  btn.disabled = true; lbl.textContent = 'Localizando…';
+  if (!navigator.geolocation) { toast(tr('noGeoSupport')); return; }
+  btn.disabled = true; lbl.textContent = tr('nearLocating');
   navigator.geolocation.getCurrentPosition(
     pos => {
       userCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
       opt.hidden = false;
       ui.sort = 'distance'; $('#sortSelect').value = 'distance';
-      btn.disabled = false; btn.setAttribute('aria-pressed', 'true'); lbl.textContent = 'Perto ✓';
+      btn.disabled = false; btn.setAttribute('aria-pressed', 'true'); lbl.textContent = tr('nearLabelActive');
       renderList();
-      toast('Pronto. Mostrando o que está mais perto de você.');
+      toast(tr('nearMeReady'));
     },
     err => {
-      btn.disabled = false; lbl.textContent = 'Perto';
-      toast(err && err.code === 1 ? 'Você precisa permitir o acesso à localização.' : 'Não foi possível obter sua localização.');
+      btn.disabled = false; lbl.textContent = tr('nearLabel');
+      toast(err && err.code === 1 ? tr('nearMeDenied') : tr('nearMeFail'));
     },
     { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
   );
@@ -68,6 +68,7 @@ $('#btnData').addEventListener('click', () => {
 });
 $('#menuClassify').addEventListener('click', () => { $('#moreDlg').close(); openClassify(); });
 $('#menuData').addEventListener('click', () => { $('#moreDlg').close(); openData(); });
+$('#menuLang').addEventListener('click', () => { setLang(LANG === 'pt' ? 'en' : 'pt'); });
 $('#placingCancel').addEventListener('click', cancelPlacing);
 $('#emptyBox').addEventListener('click', e => {
   const b = e.target.closest('[data-empty]'); if (!b) return;
@@ -91,6 +92,7 @@ window.addEventListener('resize', () => { if (map) map.invalidateSize(); });
 /* ---------- início ---------- */
 function boot() {
   revealApp();
+  applyI18n();
   initMap();
   render();
   if (CLOUD) cloudInit();
@@ -100,6 +102,7 @@ load();
 items.sort(byNewest);
 (async () => {
   if (await isUnlocked()) { boot(); return; }
+  applyI18n();
   $('#lockScreen').hidden = false;
   $('#lockInput').focus();
   $('#lockForm').addEventListener('submit', async e => {
