@@ -15,7 +15,7 @@ function pinIcon(done) {
 }
 function initMap() {
   if (!window.L) {
-    $('#map').innerHTML = '<div class="map-fail"><p>Não foi possível carregar o mapa. Confira a conexão e recarregue a página. A lista continua funcionando.</p></div>';
+    $('#map').innerHTML = `<div class="map-fail"><p>${tr('mapFail')}</p></div>`;
     return;
   }
   map = L.map('map').setView([41.8781, -87.6298], 11);
@@ -37,11 +37,11 @@ function initMap() {
 }
 function popupHTML(i) {
   return `<div><div class="pop-name">${esc(i.name)}</div>
-    <div class="pop-meta">${esc(regionOf(i))}${i.category ? ' · ' + esc(i.category) : ''}</div>
+    <div class="pop-meta">${esc(regionOf(i))}${i.category ? ' · ' + esc(categoryLabel(i.category)) : ''}</div>
     ${i.address ? `<div class="pop-meta">${esc(i.address)}</div>` : ''}
     <div class="pop-actions">
-      <a class="btn primary small" href="${mapsUrl(i)}" target="_blank" rel="noopener">Abrir no Google Maps</a>
-      <button class="btn small" data-pop="toggle" data-id="${esc(i.id)}">${i.done ? 'Desmarcar' : 'Marcar como feito'}</button>
+      <a class="btn primary small" href="${mapsUrl(i)}" target="_blank" rel="noopener">${tr('openInGoogleMaps')}</a>
+      <button class="btn small" data-pop="toggle" data-id="${esc(i.id)}">${i.done ? tr('unmarkDone') : tr('markDone')}</button>
     </div></div>`;
 }
 function renderMap() {
@@ -61,7 +61,7 @@ function renderMap() {
 function startPlacing(it) {
   if (!map) return;
   ui.placingId = it.id; setView('map');
-  $('#placingText').textContent = `Toque no mapa para posicionar “${it.name}”`;
+  $('#placingText').textContent = tr('tapToPlace', { name: it.name });
   $('#placing').hidden = false;
   map.getContainer().style.cursor = 'crosshair';
 }
@@ -76,6 +76,6 @@ function finishPlacing(ll) {
   it.lat = ll.lat; it.lng = ll.lng; it.geo = 'ok'; it.manual = true;
   save(); render();
   map.setView(ll, Math.max(map.getZoom(), 15));
-  toast('Posição salva.');
+  toast(tr('positionSaved'));
 }
 
