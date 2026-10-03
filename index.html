@@ -22,10 +22,10 @@
   <form class="card" id="lockForm" autocomplete="off">
     <div class="stripe" aria-hidden="true"></div>
     <h1>Chicago</h1>
-    <p>Lista privada. Peça a senha para quem te convidou.</p>
-    <label><span>Senha</span><input id="lockInput" type="password" required autocomplete="current-password" inputmode="text"></label>
-    <p class="err" id="lockErr" role="alert" hidden>Senha incorreta.</p>
-    <button class="btn primary" type="submit">Entrar</button>
+    <p data-i18n="lockIntro">Lista privada. Peça a senha para quem te convidou.</p>
+    <label><span data-i18n="passwordLabel">Senha</span><input id="lockInput" type="password" required autocomplete="current-password" inputmode="text"></label>
+    <p class="err" id="lockErr" role="alert" hidden data-i18n="wrongPassword">Senha incorreta.</p>
+    <button class="btn primary" type="submit" data-i18n="enterBtn">Entrar</button>
   </form>
 </div>
 
@@ -35,12 +35,12 @@
     <div class="top-row">
       <div class="brand">
         <h1>Chicago</h1>
-        <span class="sub" id="progressText">Lista vazia</span>
+        <span class="sub" id="progressText" data-i18n="emptyList">Lista vazia</span>
       </div>
       <div class="tools">
         <span class="sync" id="syncState"></span>
         <span class="dot" id="syncDot" data-s="local" role="img" aria-label="Só neste aparelho" title="Só neste aparelho"></span>
-        <button class="icon-btn" id="btnData" aria-label="Mais opções">
+        <button class="icon-btn" id="btnData" data-i18n-aria="moreOptionsAria" aria-label="Mais opções">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
           <span class="dot-badge" id="dataDot" hidden></span>
         </button>
@@ -50,60 +50,60 @@
     <div class="syncbar" id="syncBar" role="status" hidden></div>
   </header>
 
-  <section class="filters" aria-label="Filtros">
+  <section class="filters" data-i18n-aria="filtersAria" aria-label="Filtros">
     <div class="seg" id="seg">
-      <button data-status="all" aria-pressed="true">Todos</button>
-      <button data-status="todo" aria-pressed="false">Faltam</button>
-      <button data-status="done" aria-pressed="false">Feitos</button>
+      <button data-status="all" aria-pressed="true" data-i18n="statusAll">Todos</button>
+      <button data-status="todo" aria-pressed="false" data-i18n="statusTodo">Faltam</button>
+      <button data-status="done" aria-pressed="false" data-i18n="statusDone">Feitos</button>
     </div>
-    <div class="group-toggle" id="groupToggle" role="group" aria-label="Agrupar por">
-      <button data-group="region" aria-pressed="true">Região</button>
-      <button data-group="category" aria-pressed="false">Categoria</button>
+    <div class="group-toggle" id="groupToggle" role="group" data-i18n-aria="groupByAria" aria-label="Agrupar por">
+      <button data-group="region" aria-pressed="true" data-i18n="groupRegion">Região</button>
+      <button data-group="category" aria-pressed="false" data-i18n="groupCategory">Categoria</button>
     </div>
     <div class="sort-row">
-      <label for="sortSelect">Ordenar</label>
-      <select class="sort-select" id="sortSelect" aria-label="Ordenar">
-        <option value="recent">Mais recentes</option>
-        <option value="name">Nome (A–Z)</option>
-        <option value="region">Região (A–Z)</option>
-        <option value="category">Categoria (A–Z)</option>
-        <option value="rating">Nota (maior primeiro)</option>
-        <option value="distance" id="sortDistanceOpt" hidden>Mais perto de mim</option>
+      <label for="sortSelect" data-i18n="sortLabel">Ordenar</label>
+      <select class="sort-select" id="sortSelect" data-i18n-aria="sortLabel" aria-label="Ordenar">
+        <option value="recent" data-i18n="sortRecent">Mais recentes</option>
+        <option value="name" data-i18n="sortNameAZ">Nome (A–Z)</option>
+        <option value="region" data-i18n="sortRegionAZ">Região (A–Z)</option>
+        <option value="category" data-i18n="sortCategoryAZ">Categoria (A–Z)</option>
+        <option value="rating" data-i18n="sortRatingDesc">Nota (maior primeiro)</option>
+        <option value="distance" id="sortDistanceOpt" hidden data-i18n="sortDistance">Mais perto de mim</option>
       </select>
     </div>
-    <div class="chips" id="chips" aria-label="Filtrar" hidden></div>
+    <div class="chips" id="chips" data-i18n-aria="chipsFilterAria" aria-label="Filtrar" hidden></div>
   </section>
 
   <main class="panes">
-    <section class="pane list-pane" id="listPane" aria-label="Lista">
+    <section class="pane list-pane" id="listPane" data-i18n-aria="listPaneAria" aria-label="Lista">
       <div class="actions">
-        <button class="btn primary" id="btnAdd">+ Adicionar</button>
-        <button class="btn" id="btnBatch">Adicionar vários</button>
-        <button class="btn near-btn" id="btnNearMe" type="button" aria-pressed="false" aria-label="Perto de mim">
+        <button class="btn primary" id="btnAdd" data-i18n="btnAdd">+ Adicionar</button>
+        <button class="btn" id="btnBatch" data-i18n="btnBatch">Adicionar vários</button>
+        <button class="btn near-btn" id="btnNearMe" type="button" aria-pressed="false" data-i18n-aria="nearMeAria" aria-label="Perto de mim">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v8.5a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1V10"/><path d="M10 19.5V14h4v5.5"/></svg>
-          <span id="nearBtnLabel">Perto</span>
+          <span id="nearBtnLabel" data-i18n="nearLabel">Perto</span>
         </button>
       </div>
       <div class="empty" id="emptyBox" hidden></div>
       <ul id="list"></ul>
     </section>
-    <section class="pane map-pane" id="mapPane" aria-label="Mapa">
+    <section class="pane map-pane" id="mapPane" data-i18n-aria="mapPaneAria" aria-label="Mapa">
       <div id="map"></div>
       <div class="placing" id="placing" hidden>
         <span id="placingText"></span>
-        <button class="btn small" id="placingCancel">Cancelar</button>
+        <button class="btn small" id="placingCancel" data-i18n="cancelPlacing">Cancelar</button>
       </div>
     </section>
   </main>
 
-  <nav class="tabs" role="tablist" aria-label="Visão">
+  <nav class="tabs" role="tablist" data-i18n-aria="tabsAria" aria-label="Visão">
     <button role="tab" data-view="list" aria-selected="true">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1" fill="currentColor"/><circle cx="4" cy="12" r="1" fill="currentColor"/><circle cx="4" cy="18" r="1" fill="currentColor"/></svg>
-      <span>Lista</span>
+      <span data-i18n="navList">Lista</span>
     </button>
     <button role="tab" data-view="map" aria-selected="false">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
-      <span>Mapa</span>
+      <span data-i18n="navMap">Mapa</span>
     </button>
   </nav>
 </div>
@@ -111,17 +111,17 @@
 <!-- Adicionar / editar -->
 <dialog id="formDlg" aria-labelledby="formTitle">
   <form class="sheet" id="form" autocomplete="off">
-    <h2 id="formTitle">Novo lugar</h2>
-    <label><span>Nome</span><input id="fName" required placeholder="Ex.: Cloud Gate"></label>
-    <label><span>Endereço <small class="hint">Opcional. Ajuda a achar o ponto certo.</small></span><input id="fAddr" placeholder="201 E Randolph St"></label>
-    <label><span>Região <small class="hint">Opcional. Usada no filtro.</small></span><input id="fRegion" list="regionSuggest" placeholder="Loop"></label>
-    <label><span>Categoria <small class="hint">Opcional.</small></span><select id="fCategory"></select></label>
-    <label><span>Descrição <small class="hint">Opcional. O que fazer ou ver lá.</small></span><textarea id="fDesc" rows="2" placeholder="Ex.: veja obras impressionistas e uma das maiores coleções de arte dos EUA"></textarea></label>
-    <label><span>Nota <small class="hint">Opcional.</small></span><input id="fNote" placeholder="Ex.: ir de manhã"></label>
+    <h2 id="formTitle" data-i18n="formTitleNew">Novo lugar</h2>
+    <label><span data-i18n="fieldName">Nome</span><input id="fName" required data-i18n-ph="fieldNamePlaceholder" placeholder="Ex.: Cloud Gate"></label>
+    <label><span><span data-i18n="fieldAddress">Endereço</span> <small class="hint" data-i18n="fieldAddressHint">Opcional. Ajuda a achar o ponto certo.</small></span><input id="fAddr" placeholder="201 E Randolph St"></label>
+    <label><span><span data-i18n="fieldRegion">Região</span> <small class="hint" data-i18n="fieldRegionHint">Opcional. Usada no filtro.</small></span><input id="fRegion" list="regionSuggest" placeholder="Loop"></label>
+    <label><span><span data-i18n="fieldCategory">Categoria</span> <small class="hint" data-i18n="fieldCategoryHint">Opcional.</small></span><select id="fCategory"></select></label>
+    <label><span><span data-i18n="fieldDescription">Descrição</span> <small class="hint" data-i18n="fieldDescriptionHint">Opcional. O que fazer ou ver lá.</small></span><textarea id="fDesc" rows="2" data-i18n-ph="fieldDescriptionPlaceholder" placeholder="Ex.: veja obras impressionistas e uma das maiores coleções de arte dos EUA"></textarea></label>
+    <label><span><span data-i18n="fieldNote">Nota</span> <small class="hint" data-i18n="fieldNoteHint">Opcional.</small></span><input id="fNote" data-i18n-ph="fieldNotePlaceholder" placeholder="Ex.: ir de manhã"></label>
     <p class="err" id="formErr" role="alert" hidden></p>
     <div class="row-end">
-      <button type="button" class="btn" data-close>Cancelar</button>
-      <button type="submit" class="btn primary" id="formSubmit">Adicionar</button>
+      <button type="button" class="btn" data-close data-i18n="cancel">Cancelar</button>
+      <button type="submit" class="btn primary" id="formSubmit" data-i18n="formSubmitAdd">Adicionar</button>
     </div>
   </form>
   <datalist id="regionSuggest"></datalist>
@@ -130,24 +130,24 @@
 <!-- Adicionar vários -->
 <dialog id="batchDlg" aria-labelledby="batchTitle">
   <div class="sheet">
-    <h2 id="batchTitle">Adicionar vários</h2>
-    <label><span>Um item por linha <small class="hint">Formato: Nome | Endereço | Região | Categoria | Descrição. Só o nome é obrigatório.</small></span>
+    <h2 id="batchTitle" data-i18n="batchTitle">Adicionar vários</h2>
+    <label><span><span data-i18n="batchLineLabel">Um item por linha</span> <small class="hint" data-i18n="batchLineHint">Formato: Nome | Endereço | Região | Categoria | Descrição. Só o nome é obrigatório.</small></span>
       <textarea id="bText" placeholder="Cloud Gate | 201 E Randolph St | Loop | Atração | Escultura pública reluzente, ótima para fotos&#10;Wrigley Field | 1060 W Addison St | Lakeview | Evento | Veja um jogo do Cubs no estádio histórico&#10;Chicago Riverwalk"></textarea>
     </label>
-    <p class="hint" id="bCount">Cole ou escreva a lista acima.</p>
+    <p class="hint" id="bCount" data-i18n="batchCountEmpty">Cole ou escreva a lista acima.</p>
     <div class="box">
-      <strong>Gerar a lista com uma IA</strong>
+      <strong data-i18n="aiGenerateTitle">Gerar a lista com uma IA</strong>
       <div class="two">
-        <label><span>Tema</span><input id="aiTheme" placeholder="Ex.: pizzarias, museus"></label>
-        <label><span>Qtde</span><input id="aiQty" type="number" min="1" max="50" value="10" inputmode="numeric"></label>
+        <label><span data-i18n="aiThemeLabel">Tema</span><input id="aiTheme" data-i18n-ph="aiThemePlaceholder" placeholder="Ex.: pizzarias, museus"></label>
+        <label><span data-i18n="aiQtyLabel">Qtde</span><input id="aiQty" type="number" min="1" max="50" value="10" inputmode="numeric"></label>
       </div>
-      <button class="btn small" id="copyPrompt" type="button">Copiar prompt para a IA</button>
-      <p class="hint">O prompt já leva a sua lista (para a IA não repetir), as notas que você deu e pede a categoria de cada item. Cole no ChatGPT, Claude ou outro e traga a resposta para a caixa acima.</p>
+      <button class="btn small" id="copyPrompt" type="button" data-i18n="copyPromptBtn">Copiar prompt para a IA</button>
+      <p class="hint" data-i18n="aiPromptHint">O prompt já leva a sua lista (para a IA não repetir), as notas que você deu e pede a categoria de cada item. Cole no ChatGPT, Claude ou outro e traga a resposta para a caixa acima.</p>
     </div>
     <p class="status" id="bStatus" aria-live="polite"></p>
     <div class="row-end">
-      <button type="button" class="btn" data-close>Cancelar</button>
-      <button type="button" class="btn primary" id="bAdd">Adicionar à lista</button>
+      <button type="button" class="btn" data-close data-i18n="cancel">Cancelar</button>
+      <button type="button" class="btn primary" id="bAdd" data-i18n="addToListBtn">Adicionar à lista</button>
     </div>
   </div>
 </dialog>
@@ -155,14 +155,18 @@
 <!-- Mais opções -->
 <dialog id="moreDlg" aria-labelledby="moreTitle">
   <div class="sheet">
-    <h2 id="moreTitle">Mais opções</h2>
+    <h2 id="moreTitle" data-i18n="moreOptionsTitle">Mais opções</h2>
     <div class="menu-list">
       <button class="menu-item" id="menuClassify" type="button">
-        <span>Classificar itens</span>
+        <span data-i18n="menuClassify">Classificar itens</span>
         <span class="count-badge" id="classifyBadge" hidden>0</span>
       </button>
       <button class="menu-item" id="menuData" type="button">
-        <span>Backup e dados</span>
+        <span data-i18n="menuBackup">Backup e dados</span>
+      </button>
+      <button class="menu-item" id="menuLang" type="button">
+        <span data-i18n="menuLanguage">Idioma</span>
+        <span class="count-badge" id="langBadge">PT</span>
       </button>
     </div>
   </div>
@@ -171,17 +175,17 @@
 <!-- Classificar existentes -->
 <dialog id="classifyDlg" aria-labelledby="classifyTitle">
   <div class="sheet">
-    <h2 id="classifyTitle">Classificar itens</h2>
-    <p class="hint">Gere um prompt pedindo a categoria de cada item sem categoria, cole a resposta da IA abaixo e aplique de uma vez.</p>
-    <button class="btn" id="copyClassifyPrompt" type="button">Copiar prompt para a IA</button>
+    <h2 id="classifyTitle" data-i18n="classifyTitle">Classificar itens</h2>
+    <p class="hint" data-i18n="classifyHint">Gere um prompt pedindo a categoria de cada item sem categoria, cole a resposta da IA abaixo e aplique de uma vez.</p>
+    <button class="btn" id="copyClassifyPrompt" type="button" data-i18n="copyPromptBtn">Copiar prompt para a IA</button>
     <p class="hint" id="classifyCount"></p>
-    <label><span>Resposta da IA <small class="hint">Formato: Nome | Categoria</small></span>
+    <label><span><span data-i18n="aiAnswerLabel">Resposta da IA</span> <small class="hint" data-i18n="aiAnswerFormatHint">Formato: Nome | Categoria</small></span>
       <textarea id="cText" placeholder="Cloud Gate (The Bean) | Atração&#10;Gibsons Bar &amp; Steakhouse | Restaurante"></textarea>
     </label>
     <p class="status" id="cStatus" aria-live="polite"></p>
     <div class="row-end">
-      <button type="button" class="btn" data-close>Cancelar</button>
-      <button type="button" class="btn primary" id="cApply">Aplicar categorias</button>
+      <button type="button" class="btn" data-close data-i18n="cancel">Cancelar</button>
+      <button type="button" class="btn primary" id="cApply" data-i18n="applyCategoriesBtn">Aplicar categorias</button>
     </div>
   </div>
 </dialog>
@@ -189,30 +193,31 @@
 <!-- Dados -->
 <dialog id="dataDlg" aria-labelledby="dataTitle">
   <div class="sheet">
-    <h2 id="dataTitle">Backup e dados</h2>
+    <h2 id="dataTitle" data-i18n="backupTitle">Backup e dados</h2>
     <p class="hint" id="dataHint"></p>
-    <h3>Backup manual</h3>
+    <h3 data-i18n="backupManualTitle">Backup manual</h3>
     <textarea id="dExport" readonly rows="3" aria-label="Backup"></textarea>
-    <button class="btn" id="dCopy" type="button">Copiar backup</button>
-    <h3>Restaurar backup</h3>
-    <textarea id="dImport" rows="3" placeholder="Cole o backup aqui" aria-label="Colar backup"></textarea>
+    <button class="btn" id="dCopy" type="button" data-i18n="copyBackupBtn">Copiar backup</button>
+    <h3 data-i18n="restoreBackupTitle">Restaurar backup</h3>
+    <textarea id="dImport" rows="3" data-i18n-ph="pasteBackupPlaceholder" placeholder="Cole o backup aqui" aria-label="Colar backup"></textarea>
     <div class="row-end">
-      <button class="btn" id="dMerge" type="button">Mesclar com a lista</button>
-      <button class="btn" id="dReplace" type="button">Substituir tudo</button>
+      <button class="btn" id="dMerge" type="button" data-i18n="mergeBtn">Mesclar com a lista</button>
+      <button class="btn" id="dReplace" type="button" data-i18n="replaceBtn">Substituir tudo</button>
     </div>
     <p class="status" id="dStatus" aria-live="polite"></p>
-    <button class="btn danger" id="dWipe" type="button">Apagar tudo</button>
-    <button class="btn" type="button" data-close>Fechar</button>
+    <button class="btn danger" id="dWipe" type="button" data-i18n="wipeBtn">Apagar tudo</button>
+    <button class="btn" type="button" data-close data-i18n="closeBtn">Fechar</button>
   </div>
 </dialog>
 
 <div class="toast" id="toast" role="status" aria-live="polite" hidden>
-  <span></span><button type="button">Desfazer</button>
+  <span></span><button type="button" data-i18n="undoBtn">Desfazer</button>
 </div>
 
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js"></script>
 <script defer src="config.js"></script>
+<script defer src="js/i18n.js"></script>
 <script defer src="js/core.js"></script>
 <script defer src="js/data.js"></script>
 <script defer src="js/cloud.js"></script>
