@@ -33,12 +33,12 @@ function cache() {
   catch (e) { return false; }
 }
 function save() {
-  if (!cache() && !CLOUD) toast('Não foi possível salvar neste navegador.');
+  if (!cache() && !CLOUD) toast(tr('cantSaveLocal'));
   if (CLOUD) pushChanges();
 }
 const hasGeo = i => Number.isFinite(i.lat) && Number.isFinite(i.lng);
-const regionOf = i => i.region || 'Sem região';
-const categoryOf = i => i.category || 'Sem categoria';
+const regionOf = i => i.region || tr('noRegion');
+const categoryOf = i => i.category ? categoryLabel(i.category) : tr('noCategory');
 const nameKey = s => String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
   .replace(/\(.*?\)/g, ' ').replace(/['’`]/g, '').replace(/[^a-z0-9]+/g, ' ').replace(/^(the|a|an) /, '').trim();
 function canonRegion(r) {
